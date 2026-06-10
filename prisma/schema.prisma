@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// One row per medical office (the paying customer)
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  npi       String? // National Provider Identifier (optional)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users   User[]
+  tasks   ComplianceTask[]
+  reports Report[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  supabaseId     String       @unique // maps to Supabase auth.users.id
+  email          String       @unique
+  name           String?
+  role           Role         @default(MEMBER)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  assignedTasks ComplianceTask[] @relation("TaskAssignee")
+  evidence      Evidence[]
+
+  @@index([organizationId])
+}
+
+enum Role {
+  ADMIN // office manager / owner
+  MEMBER // staff
+}
+
+// The master checklist template — seeded once, shared by all orgs
+model TaskTemplate {
+  id          String   @id @default(cuid())
+  category    Category
+  citation    String // e.g. "164.308(a)(1)(ii)(A)"
+  title       String // plain-English, e.g. "Complete an annual security risk assessment"
+  description String // what it means, why it matters, what evidence looks like
+  sortOrder   Int
+
+  tasks ComplianceTask[]
+}
+
+enum Category {
+  ADMINISTRATIVE // 164.308
+  PHYSICAL // 164.310
+  TECHNICAL // 164.312
+  ORGANIZATIONAL // 164.314 (BAAs)
+  POLICIES // 164.316 (documentation)
+}
+
+// Each org's instance of a template task
+model ComplianceTask {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  templateId     String
+  template       TaskTemplate @relation(fields: [templateId], references: [id])
+
+  status      TaskStatus @default(NOT_STARTED)
+  assigneeId  String?
+  assignee    User?      @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  dueDate     DateTime?
+  notes       String?    @db.Text
+  completedAt DateTime?
+  updatedAt   DateTime   @updatedAt
+
+  evidence Evidence[]
+
+  @@unique([organizationId, templateId])
+  @@index([organizationId, status])
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETE
+  NOT_APPLICABLE // excluded from score denominator
+}
+
+// Files attached to tasks (stored in Supabase Storage)
+model Evidence {
+  id           String         @id @default(cuid())
+  taskId       String
+  task         ComplianceTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User           @relation(fields: [uploadedById], references: [id])
+  fileName     String
+  storagePath  String // Supabase Storage path
+  mimeType     String
+  sizeBytes    Int
+  createdAt    DateTime       @default(now())
+
+  @@index([taskId])
+}
+
+// Generated PDF compliance reports (audit trail of exports)
+model Report {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  scoreAtExport  Int // 0-100
+  storagePath    String
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
