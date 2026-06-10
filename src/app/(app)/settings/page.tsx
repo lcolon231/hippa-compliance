@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OrgNameForm } from "@/components/settings/org-name-form";
 import { TeamSection } from "@/components/settings/team-section";
+import { BillingCard } from "@/components/settings/billing-card";
 import {
   Card,
   CardContent,
@@ -68,10 +69,18 @@ export default async function SettingsPage() {
         <CardHeader>
           <CardTitle className="text-lg">Billing</CardTitle>
           <CardDescription>
-            $79/month per office. Online billing is coming soon — contact
-            support to manage your subscription.
+            Manage your subscription, payment method, and invoices through
+            Stripe.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <BillingCard
+            subscriptionStatus={user.organization.subscriptionStatus}
+            currentPeriodEnd={user.organization.currentPeriodEnd}
+            hasCustomer={Boolean(user.organization.stripeCustomerId)}
+            isAdmin={isAdmin}
+          />
+        </CardContent>
       </Card>
     </div>
   );

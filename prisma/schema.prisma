@@ -16,9 +16,22 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Stripe billing
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?
+  subscriptionStatus   SubscriptionStatus @default(TRIALING)
+  currentPeriodEnd     DateTime?
+
   users   User[]
   tasks   ComplianceTask[]
   reports Report[]
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
 }
 
 model User {
@@ -76,6 +89,8 @@ model ComplianceTask {
   dueDate     DateTime?
   notes       String?    @db.Text
   completedAt DateTime?
+  // Last time a due-date reminder email went out for this task
+  reminderSentAt DateTime?
   updatedAt   DateTime   @updatedAt
 
   evidence Evidence[]
