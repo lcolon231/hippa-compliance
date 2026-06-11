@@ -14,19 +14,33 @@ import { X } from "lucide-react";
 
 const ALL = "ALL";
 
-interface TaskFiltersProps {
-  members: { id: string; name: string | null; email: string }[];
+interface Framework {
+  id: string;
+  name: string;
 }
 
-export function TaskFilters({ members }: TaskFiltersProps) {
+interface Member {
+  id: string;
+  name: string | null;
+  email: string;
+}
+
+interface TaskFiltersProps {
+  frameworks: Framework[];
+  members: Member[];
+}
+
+export function TaskFilters({ frameworks, members }: TaskFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const framework = searchParams.get("framework") ?? ALL;
   const category = searchParams.get("category") ?? ALL;
   const status = searchParams.get("status") ?? ALL;
   const assignee = searchParams.get("assignee") ?? ALL;
-  const hasFilters = category !== ALL || status !== ALL || assignee !== ALL;
+  const hasFilters =
+    framework !== ALL || category !== ALL || status !== ALL || assignee !== ALL;
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -35,11 +49,32 @@ export function TaskFilters({ members }: TaskFiltersProps) {
     } else {
       params.set(key, value);
     }
+    // Changing the framework filter also clears category (different categories per framework)
+    if (key === "framework") params.delete("category");
     router.replace(`${pathname}?${params.toString()}`);
   }
 
   return (
     <div className="flex flex-wrap items-center gap-3">
+      {frameworks.length > 1 && (
+        <Select
+          value={framework}
+          onValueChange={(v) => setParam("framework", v)}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Framework" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>All frameworks</SelectItem>
+            {frameworks.map((f) => (
+              <SelectItem key={f.id} value={f.id}>
+                {f.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
       <Select value={category} onValueChange={(v) => setParam("category", v)}>
         <SelectTrigger className="w-[220px]">
           <SelectValue placeholder="Category" />

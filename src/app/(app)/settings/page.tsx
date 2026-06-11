@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { OrgNameForm } from "@/components/settings/org-name-form";
 import { TeamSection } from "@/components/settings/team-section";
 import { BillingCard } from "@/components/settings/billing-card";
+import { FrameworksSection } from "@/components/settings/frameworks-section";
 import {
   Card,
   CardContent,
@@ -17,18 +18,30 @@ export default async function SettingsPage() {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
 
-  const members = await prisma.user.findMany({
-    where: { organizationId: user.organizationId },
-    select: { id: true, name: true, email: true, role: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const [members, allFrameworks, enabledFrameworks] = await Promise.all([
+    prisma.user.findMany({
+      where: { organizationId: user.organizationId },
+      select: { id: true, name: true, email: true, role: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.framework.findMany({
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { templates: true } } },
+    }),
+    prisma.orgFramework.findMany({
+      where: { organizationId: user.organizationId },
+      select: { frameworkId: true },
+    }),
+  ]);
+
+  const enabledIds = enabledFrameworks.map((f) => f.frameworkId);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
-          Manage your organization and team
+          Manage your organization, frameworks, and team
         </p>
       </div>
 
@@ -43,6 +56,24 @@ export default async function SettingsPage() {
           <OrgNameForm
             initialName={user.organization.name}
             canEdit={isAdmin}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Compliance Frameworks</CardTitle>
+          <CardDescription>
+            Enable frameworks to add their task checklists to your dashboard.
+            Disabling a framework hides its tasks but preserves your progress
+            data.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FrameworksSection
+            allFrameworks={allFrameworks}
+            enabledIds={enabledIds}
+            isAdmin={isAdmin}
           />
         </CardContent>
       </Card>

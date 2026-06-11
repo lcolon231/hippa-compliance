@@ -19,6 +19,7 @@ export const metadata = { title: "Tasks" };
 
 interface TasksPageProps {
   searchParams: Promise<{
+    framework?: string;
     category?: string;
     status?: string;
     assignee?: string;
@@ -29,15 +30,36 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
   const user = await requireUser();
   const params = await searchParams;
 
+  // Frameworks this org has enabled
+  const enabledFrameworks = await prisma.orgFramework.findMany({
+    where: { organizationId: user.organizationId },
+    include: { framework: { select: { id: true, name: true, slug: true } } },
+    orderBy: { framework: { sortOrder: "asc" } },
+  });
+  const enabledFrameworkIds = enabledFrameworks.map((f) => f.frameworkId);
+
   const where: Prisma.ComplianceTaskWhereInput = {
     organizationId: user.organizationId,
+    // Only show tasks belonging to enabled frameworks
+    template: {
+      frameworkId: { in: enabledFrameworkIds },
+    },
   };
 
   if (params.status && params.status in TaskStatus) {
     where.status = params.status as TaskStatus;
   }
   if (params.category && params.category in Category) {
-    where.template = { category: params.category as Category };
+    where.template = {
+      ...((where.template as object) ?? {}),
+      category: params.category as Category,
+    };
+  }
+  if (params.framework) {
+    where.template = {
+      ...((where.template as object) ?? {}),
+      frameworkId: params.framework,
+    };
   }
   if (params.assignee === "UNASSIGNED") {
     where.assigneeId = null;
@@ -49,7 +71,11 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
     prisma.complianceTask.findMany({
       where,
       include: {
-        template: true,
+        template: {
+          include: {
+            framework: { select: { id: true, name: true, slug: true } },
+          },
+        },
         assignee: { select: { id: true, name: true, email: true } },
         _count: { select: { evidence: true } },
       },
@@ -62,10 +88,13 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
     }),
   ]);
 
+  // Group by category, in the global category order
   const grouped = CATEGORY_ORDER.map((category) => ({
     category,
     tasks: tasks.filter((t) => t.template.category === category),
   })).filter((g) => g.tasks.length > 0);
+
+  const frameworks = enabledFrameworks.map((f) => f.framework);
 
   return (
     <div className="space-y-6">
@@ -73,12 +102,12 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
           <p className="text-muted-foreground">
-            Your HIPAA Security Rule checklist — {tasks.length} task
-            {tasks.length === 1 ? "" : "s"} shown
+            {tasks.length} task{tasks.length === 1 ? "" : "s"} across{" "}
+            {frameworks.length} framework{frameworks.length === 1 ? "" : "s"}
           </p>
         </div>
         <Suspense>
-          <TaskFilters members={members} />
+          <TaskFilters frameworks={frameworks} members={members} />
         </Suspense>
       </div>
 
@@ -118,8 +147,13 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
                           variant="outline"
                           className="rounded px-1.5 py-0 font-mono text-[10px]"
                         >
-                          § {task.template.citation}
+                          {task.template.citation}
                         </Badge>
+                        {task.template.framework && (
+                          <span className="text-muted-foreground/70">
+                            {task.template.framework.name}
+                          </span>
+                        )}
                         {task.assignee && (
                           <span>
                             {task.assignee.name ?? task.assignee.email}

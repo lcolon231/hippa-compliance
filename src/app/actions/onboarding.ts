@@ -8,25 +8,42 @@ import { getSupabaseUser, getCurrentUser } from "@/lib/auth";
 const schema = z.object({
   orgName: z.string().trim().min(1).max(120),
   npi: z.string().trim().max(20).optional(),
+  // Comma-separated list of framework IDs to enable
+  frameworkIds: z.string().optional(),
 });
 
 export async function createOrganization(formData: FormData) {
   const supabaseUser = await getSupabaseUser();
   if (!supabaseUser) throw new Error("Unauthorized");
 
-  // Already onboarded → nothing to do.
   const existing = await getCurrentUser();
   if (existing) redirect("/dashboard");
 
   const parsed = schema.safeParse({
     orgName: formData.get("orgName"),
     npi: formData.get("npi") || undefined,
+    frameworkIds: formData.get("frameworkIds") || undefined,
   });
   if (!parsed.success) {
     throw new Error("Please enter a valid organization name");
   }
 
+  const requestedFrameworkIds = parsed.data.frameworkIds
+    ? parsed.data.frameworkIds.split(",").filter(Boolean)
+    : [];
+
+  // Always ensure at least one framework (HIPAA Security Rule) is selected.
+  let frameworkIds = requestedFrameworkIds;
+  if (frameworkIds.length === 0) {
+    const defaultFw = await prisma.framework.findUnique({
+      where: { slug: "hipaa-security" },
+      select: { id: true },
+    });
+    if (defaultFw) frameworkIds = [defaultFw.id];
+  }
+
   const templates = await prisma.taskTemplate.findMany({
+    where: frameworkIds.length > 0 ? { frameworkId: { in: frameworkIds } } : {},
     select: { id: true },
   });
 
@@ -50,6 +67,17 @@ export async function createOrganization(formData: FormData) {
         organizationId: org.id,
       },
     });
+
+    // Record which frameworks the org enrolled in.
+    if (frameworkIds.length > 0) {
+      await tx.orgFramework.createMany({
+        data: frameworkIds.map((fwId) => ({
+          organizationId: org.id,
+          frameworkId: fwId,
+        })),
+        skipDuplicates: true,
+      });
+    }
 
     if (templates.length > 0) {
       await tx.complianceTask.createMany({
