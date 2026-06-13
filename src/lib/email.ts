@@ -2,10 +2,29 @@ import { Resend } from "resend";
 
 const globalForResend = globalThis as unknown as { resend?: Resend };
 
-export const resend =
-  globalForResend.resend ?? new Resend(process.env.RESEND_API_KEY!);
+function getResend(): Resend {
+  if (!globalForResend.resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error("RESEND_API_KEY is not set");
+    }
+    globalForResend.resend = new Resend(apiKey);
+  }
+  return globalForResend.resend;
+}
 
-if (process.env.NODE_ENV !== "production") globalForResend.resend = resend;
+/**
+ * Lazily-initialized Resend client. The underlying client is constructed on
+ * first property access rather than at import time, so `next build` can collect
+ * page data without RESEND_API_KEY being present in the build environment.
+ */
+export const resend = new Proxy({} as Resend, {
+  get(_target, prop, receiver) {
+    const client = getResend();
+    const value = Reflect.get(client, prop, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
 
 const FROM = process.env.EMAIL_FROM ?? "HIPAA Tracker <noreply@example.com>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
