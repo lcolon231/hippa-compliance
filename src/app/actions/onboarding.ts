@@ -43,9 +43,19 @@ export async function createOrganization(formData: FormData) {
   }
 
   const templates = await prisma.taskTemplate.findMany({
-    where: frameworkIds.length > 0 ? { frameworkId: { in: frameworkIds } } : {},
+    where: { frameworkId: { in: frameworkIds } },
     select: { id: true },
   });
+
+  // Guard against an unseeded database: without framework/template data we
+  // would otherwise create an empty organization with zero tasks, leaving the
+  // dashboard permanently blank. Fail loudly instead so the misconfiguration
+  // is obvious (run `prisma db seed`).
+  if (frameworkIds.length === 0 || templates.length === 0) {
+    throw new Error(
+      "No compliance frameworks are available. The database has not been seeded — run `prisma db seed` before onboarding."
+    );
+  }
 
   await prisma.$transaction(async (tx) => {
     const org = await tx.organization.create({
