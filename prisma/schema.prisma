@@ -90,6 +90,7 @@ model TaskTemplate {
   citation    String
   title       String
   description String
+  guide       String?   @db.Text // Markdown "how to comply" walkthrough (optional)
   sortOrder   Int
 
   tasks ComplianceTask[]

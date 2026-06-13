@@ -35,6 +35,7 @@ const SECURITY_TASKS: {
   citation: string;
   title: string;
   description: string;
+  guide?: string;
   sortOrder: number;
 }[] = [
   // ADMINISTRATIVE
@@ -44,6 +45,30 @@ const SECURITY_TASKS: {
     title: "Conduct Annual Security Risk Assessment",
     description:
       "Conduct a comprehensive assessment of potential risks and vulnerabilities to the confidentiality, integrity, and availability of all ePHI your office creates, receives, maintains, or transmits. Document findings and review annually. Evidence: completed risk assessment report signed by your Security Officer.",
+    guide: `## How to comply
+
+A Security Risk Assessment (SRA) is the foundation of your entire HIPAA program — every other safeguard flows from what it finds. It is **required**, not addressable, and OCR asks for it first in nearly every investigation.
+
+### Step-by-step
+
+1. **Inventory where ePHI lives.** List every system, device, and service that creates, receives, stores, or transmits ePHI: your EHR, practice-management software, email, imaging, backups, laptops, phones, and any cloud vendor.
+2. **Identify threats and vulnerabilities.** For each location, ask what could go wrong — ransomware, lost laptop, unauthorized staff access, vendor breach, natural disaster.
+3. **Rate likelihood and impact.** Score each risk (e.g., Low / Medium / High for both), and multiply to get an overall risk level.
+4. **Document current controls.** Note what already protects each asset (encryption, MFA, backups) so you only remediate real gaps.
+5. **Produce a written report.** Capture scope, methodology, the threat/vulnerability list, ratings, and conclusions. Have your Security Officer date and sign it.
+
+### Tools you can use
+- **HHS SRA Tool** (free, from HealthIT.gov) — purpose-built for small practices and produces a report auditors recognize.
+- A documented spreadsheet works too, as long as it covers all assets and is signed.
+
+### What an auditor looks for
+- A **current-year** report (SRAs older than 12 months are a top finding).
+- Coverage of **all** ePHI, not just the EHR.
+- Evidence it actually drove fixes (links to your [Risk Management Plan](#)).
+
+> ⚠️ **Most common mistake:** treating a vendor's "we're HIPAA compliant" claim as your risk assessment. The SRA must cover *your* office and *your* configuration.
+
+**Evidence to attach:** the signed, dated risk assessment report (PDF or HHS SRA Tool export).`,
     sortOrder: 1,
   },
   {
@@ -52,6 +77,32 @@ const SECURITY_TASKS: {
     title: "Implement Risk Management Plan",
     description:
       "Develop and implement security measures sufficient to reduce identified risks to a reasonable and appropriate level. Document all risk management decisions and remediation progress. Evidence: risk management plan with remediation timelines and owners.",
+    guide: `## How to comply
+
+The Risk Management Plan is what you *do* about the risks your Security Risk Assessment found. The assessment finds the holes; this plan tracks plugging them.
+
+### Step-by-step
+
+1. **Pull every High and Medium risk** from your risk assessment into a tracking list.
+2. **Decide a response for each:** *mitigate* (add a control), *accept* (document why the risk is tolerable), or *transfer* (e.g., cyber-liability insurance).
+3. **Assign an owner and a due date** to every mitigation item — vague "someone will fix it" entries fail audits.
+4. **Track progress** as items move from open → in progress → done, and keep the closed items in the record.
+5. **Review quarterly** and refresh after any major change (new EHR, new location, a security incident).
+
+### A simple format that works
+
+| Risk | Level | Response | Owner | Due | Status |
+|------|-------|----------|-------|-----|--------|
+| Laptops unencrypted | High | Enable BitLocker on all devices | Office Mgr | 30 days | Done |
+| No MFA on email | High | Turn on MFA org-wide | IT/MSP | 15 days | In progress |
+
+### What an auditor looks for
+- A **direct line** from each risk-assessment finding to a remediation item.
+- Realistic timelines and **evidence that items actually closed**.
+
+> ⚠️ **Most common mistake:** a beautiful risk assessment with no follow-through. OCR penalizes "known but unaddressed" risks far more harshly than risks you're actively working.
+
+**Evidence to attach:** the risk management plan / remediation tracker showing owners, dates, and status.`,
     sortOrder: 2,
   },
   {
@@ -60,6 +111,28 @@ const SECURITY_TASKS: {
     title: "Apply Sanction Policy for Violations",
     description:
       "Maintain a written sanctions policy for workforce members who fail to comply with your security policies, and apply it consistently. Evidence: written sanction policy and records of any sanctions applied.",
+    guide: `## How to comply
+
+A sanction policy spells out the consequences when a staff member violates HIPAA rules. It must exist in writing *and* be applied evenly — selective enforcement is itself a finding.
+
+### Step-by-step
+
+1. **Write a tiered policy.** Match the consequence to the severity, for example:
+   - *Minor / first offense* (e.g., leaving a screen unlocked): verbal warning + retraining.
+   - *Serious* (e.g., snooping in a record with no business reason): written warning or suspension.
+   - *Egregious* (e.g., selling or stealing PHI): termination and possible legal referral.
+2. **Tie it to your other policies** so staff know which rules trigger sanctions.
+3. **Have every workforce member acknowledge it** in writing, ideally during onboarding and annual training.
+4. **Apply it consistently.** Document each instance — what happened, the sanction applied, the date — even when the person is a manager or provider.
+5. **Keep a sanctions log**, even if it's empty; an empty-but-maintained log shows the process exists.
+
+### What an auditor looks for
+- The **written, acknowledged** policy.
+- Evidence it's enforced the **same way** regardless of seniority.
+
+> ⚠️ **Most common mistake:** having the policy but never documenting an actual sanction, or going easy on a senior provider. Inconsistent enforcement undermines the whole control.
+
+**Evidence to attach:** the signed sanction policy and your sanctions log (records of any disciplinary action taken).`,
     sortOrder: 3,
   },
   {
@@ -68,6 +141,32 @@ const SECURITY_TASKS: {
     title: "Review System Activity Logs",
     description:
       "Implement procedures to regularly review records of information system activity, such as audit logs, access reports, and security incident tracking reports. Evidence: log review schedule and completed review records.",
+    guide: `## How to comply
+
+This safeguard is about actually *looking* at your logs on a schedule — not just generating them. Many breaches go undetected for months because no one reviews access records.
+
+### Step-by-step
+
+1. **Decide what to review.** At minimum: EHR access logs, failed-login reports, and any security-tool alerts (antivirus, firewall).
+2. **Set a cadence.** Monthly is a reasonable baseline for a small office; weekly for higher-risk systems.
+3. **Define what you're hunting for:**
+   - Access to records outside a staff member's job duties (snooping).
+   - A user viewing a VIP, celebrity, neighbor, or family member's chart.
+   - After-hours or bulk access that doesn't match normal patterns.
+   - Repeated failed logins (possible attack).
+4. **Record each review:** who reviewed, the date, what was checked, and anything flagged or escalated.
+5. **Follow up on anomalies** through your incident-response process.
+
+### Make it sustainable
+- Use your EHR's built-in audit-log and "who accessed this chart" reports.
+- A short monthly checklist beats an ambitious plan no one follows.
+
+### What an auditor looks for
+- A **documented schedule** *and* completed review records — not just the capability to pull logs.
+
+> ⚠️ **Most common mistake:** logging is enabled but nobody reviews it. The requirement is the *review*, evidenced by dated sign-offs.
+
+**Evidence to attach:** your log-review schedule plus completed monthly review records (dated, with reviewer name).`,
     sortOrder: 4,
   },
   {
@@ -76,6 +175,29 @@ const SECURITY_TASKS: {
     title: "Designate HIPAA Security Officer",
     description:
       "Identify a single individual who is responsible for developing and implementing the security policies and procedures required by the Security Rule. Evidence: written designation letter or job description naming the Security Officer.",
+    guide: `## How to comply
+
+Every covered entity must name **one** person accountable for the Security Rule. In a small practice this is often the office manager or owner — what matters is that the role is formally assigned, not that you hire a specialist.
+
+### Step-by-step
+
+1. **Pick the person.** They should have enough authority to enforce policy and a working understanding of your systems. The Security Officer and [Privacy Officer](#) can be the same person.
+2. **Document the designation** in a short letter or a job-description addendum stating the person's name, title, effective date, and responsibilities.
+3. **Define the responsibilities**, typically:
+   - Owning the annual risk assessment and risk management plan.
+   - Maintaining security policies and workforce training.
+   - Leading incident response and breach evaluation.
+   - Managing access provisioning and termination.
+4. **Have leadership sign it**, and have the officer acknowledge the role.
+5. **Re-assign promptly** if the person leaves — never leave the role vacant.
+
+### What an auditor looks for
+- A **named individual** with a dated, signed designation.
+- Evidence the person is **actually performing** the duties (their name on the risk assessment, training records, etc.).
+
+> ⚠️ **Most common mistake:** assuming "the IT company handles it." Your MSP can advise, but the accountable Security Officer must be someone inside your organization.
+
+**Evidence to attach:** the signed designation letter or job description naming the Security Officer.`,
     sortOrder: 5,
   },
   {
@@ -84,6 +206,33 @@ const SECURITY_TASKS: {
     title: "Document Workforce Authorization Procedures",
     description:
       "Implement procedures for authorizing and supervising workforce members who work with ePHI or in locations where it may be accessed. Evidence: written authorization procedures and current access control lists.",
+    guide: `## How to comply
+
+This safeguard ensures access to ePHI is **granted deliberately** and matched to each person's job — the "authorization" half of access control (termination is covered separately).
+
+### Step-by-step
+
+1. **Define role-based access levels.** Map job titles to what they should see — e.g., front desk needs scheduling/demographics, providers need full charts, billing needs claims data.
+2. **Apply least privilege.** Give each person the minimum access their role requires, not the maximum the system allows.
+3. **Document an approval workflow:** new access must be requested and approved (usually by the Security Officer) *before* the account is created.
+4. **Maintain a current access list** — a roster of who has access to which systems and at what level.
+5. **Supervise and review.** Re-verify access quarterly and whenever someone changes roles.
+
+### A simple access matrix
+
+| Role | EHR | Billing system | Admin/Config |
+|------|-----|----------------|--------------|
+| Front desk | Scheduling only | No | No |
+| Provider | Full clinical | Read | No |
+| Office manager | Full | Full | Yes |
+
+### What an auditor looks for
+- **Written** authorization procedures *and* a current, accurate access list.
+- Evidence that access is granted by role, not handed out uniformly.
+
+> ⚠️ **Most common mistake:** everyone is an "admin." Over-provisioning is one of the most cited access findings.
+
+**Evidence to attach:** the written authorization procedure and your current access-control list / role matrix.`,
     sortOrder: 6,
   },
   {
@@ -92,6 +241,25 @@ const SECURITY_TASKS: {
     title: "Document Workforce Clearance Procedures",
     description:
       "Implement procedures to determine that each workforce member's access to ePHI is appropriate for their role. Evidence: background check records and periodic access review documentation.",
+    guide: `## How to comply
+
+Workforce clearance is about confirming a person is **trustworthy and appropriate** for the ePHI access their role carries — both before hire and on an ongoing basis.
+
+### Step-by-step
+
+1. **Screen before granting access.** Run background checks appropriate to the role and your state's requirements before a new hire touches ePHI.
+2. **Verify credentials** for clinical staff (licensure, sanctions/exclusion lists such as the OIG LEIE).
+3. **Match clearance to sensitivity.** A provider with full-chart access warrants more scrutiny than a part-time scheduler.
+4. **Re-verify periodically.** Review each person's access at least annually and confirm it still fits their current duties.
+5. **Document the clearance decision** — what was checked, when, and who approved access.
+
+### What an auditor looks for
+- Evidence of **pre-access screening** and **periodic access reviews**.
+- A defensible, consistent process — not screening some hires but not others.
+
+> ⚠️ **Most common mistake:** screening at hire and never revisiting. Roles change; access should be re-confirmed on a schedule.
+
+**Evidence to attach:** background-check records (or a redacted log of completion) and your periodic access-review documentation.`,
     sortOrder: 7,
   },
   {
@@ -100,6 +268,31 @@ const SECURITY_TASKS: {
     title: "Implement Access Termination Procedures",
     description:
       "Establish procedures to terminate access to ePHI when a workforce member leaves or changes roles. Access should be revoked the same day employment ends. Evidence: offboarding checklist and access termination log.",
+    guide: `## How to comply
+
+When someone leaves or changes roles, their access to ePHI must be cut off **promptly** — ideally the same day, immediately for involuntary terminations. Lingering accounts of former staff are a frequent breach source.
+
+### Step-by-step
+
+1. **Build an offboarding checklist** covering every system the person could reach:
+   - EHR / practice-management login
+   - Email and any single-sign-on
+   - VPN / remote access
+   - Cloud storage, billing portals, vendor logins
+   - Building keys, key cards, alarm codes
+   - Shared/service-account passwords they knew (rotate these)
+2. **Recover devices** — laptops, phones, badges — and remote-wipe any that aren't returned.
+3. **Set a hard timeline:** same-day for planned departures, **immediate** for involuntary ones (disable before the conversation when feasible).
+4. **Log every termination:** name, date, systems disabled, who performed it.
+5. **Handle role changes too** — remove access the new role no longer needs, don't just add new access.
+
+### What an auditor looks for
+- A **repeatable checklist** and a **termination log** proving access was actually revoked, with dates.
+- Tight timing between separation date and revocation.
+
+> ⚠️ **Most common mistake:** disabling the EHR login but forgetting email, VPN, or a vendor portal. Map *all* access in advance.
+
+**Evidence to attach:** your offboarding checklist template and the access-termination log.`,
     sortOrder: 8,
   },
   {
@@ -108,6 +301,30 @@ const SECURITY_TASKS: {
     title: "Provide Annual Security Awareness Training",
     description:
       "Train all workforce members on security awareness topics such as malware protection, log-in monitoring, and password hygiene. Repeat annually and for all new hires. Evidence: training attendance records and training materials.",
+    guide: `## How to comply
+
+Your staff are the front line — most breaches start with a clicked phishing link or a weak password. Security awareness training is required for **all** workforce members, including providers, part-timers, and volunteers.
+
+### Step-by-step
+
+1. **Cover the core topics:**
+   - Recognizing phishing and social-engineering attempts.
+   - Password hygiene and using a password manager.
+   - Malware and safe browsing/downloads.
+   - Reporting suspected incidents (who to tell, how fast).
+   - Locking screens, clean-desk, and proper PHI handling.
+2. **Train at the right times:** within a reasonable period of hire, **annually** thereafter, and whenever a new threat or policy change warrants a refresh.
+3. **Make it stick.** Short, frequent reminders and periodic phishing simulations work better than one long yearly lecture.
+4. **Track completion** — name, date, topics, and a sign-off or quiz score for each person.
+5. **Keep the materials** you used (slides, video links, handouts) as part of the evidence.
+
+### What an auditor looks for
+- **Attendance/completion records for everyone**, current within 12 months.
+- The actual **training content**, showing required topics were covered.
+
+> ⚠️ **Most common mistake:** training clinical staff but skipping front desk, billing, or the owner. *Everyone* with system access must be trained.
+
+**Evidence to attach:** training attendance/completion log and a copy of the training materials.`,
     sortOrder: 9,
   },
   {
@@ -116,6 +333,29 @@ const SECURITY_TASKS: {
     title: "Implement Password Management Policy",
     description:
       "Establish and enforce procedures for creating, changing, and safeguarding passwords. Require strong, unique passwords and encourage use of a password manager. Evidence: written password policy and password manager adoption records.",
+    guide: `## How to comply
+
+A written password policy plus the tooling to enforce it. Modern guidance (NIST 800-63B) favors **long passphrases + MFA** over frequent forced resets.
+
+### Step-by-step
+
+1. **Set the rules in writing:**
+   - Minimum length (12+ characters / a passphrase), and screen against common/breached passwords.
+   - **Unique** password per system — no reuse.
+   - No sharing accounts or writing passwords on sticky notes.
+   - Pair passwords with **MFA** wherever ePHI is reachable (see [Implement MFA](#)).
+2. **Skip arbitrary 90-day expiry.** Force a change only on evidence of compromise — constant rotation pushes people toward weak, predictable patterns.
+3. **Roll out a password manager** (e.g., Bitwarden, 1Password) so unique strong passwords are practical, and track who's enrolled.
+4. **Enforce technically** where you can — set minimum length/complexity in the EHR, Windows, and Google/Microsoft admin consoles.
+5. **Cover account lockout** after repeated failed attempts.
+
+### What an auditor looks for
+- The **written policy**, acknowledged by staff.
+- Evidence of **enforcement** — config screenshots and password-manager enrollment records.
+
+> ⚠️ **Most common mistake:** a policy on paper that no system actually enforces. Back it with technical controls.
+
+**Evidence to attach:** the written password policy and password-manager adoption/enrollment records.`,
     sortOrder: 10,
   },
   {
@@ -124,6 +364,29 @@ const SECURITY_TASKS: {
     title: "Document Security Incident Response Procedures",
     description:
       "Implement policies and procedures to identify, respond to, mitigate, and document security incidents and their outcomes. Evidence: incident response plan and a maintained incident log.",
+    guide: `## How to comply
+
+When something goes wrong — ransomware, a lost laptop, a misdirected fax — you need a plan you can execute under pressure. A documented incident-response procedure turns panic into a checklist.
+
+### Step-by-step
+
+1. **Define what counts as an incident:** malware, lost/stolen device, unauthorized access, misdirected PHI, phishing compromise, vendor breach.
+2. **Write the response phases:**
+   - **Detect & report** — how staff recognize and immediately report (name a contact and a deadline, e.g., "within 1 hour").
+   - **Contain** — isolate the affected device/account; disconnect from the network.
+   - **Eradicate & recover** — remove the threat and restore from clean backups.
+   - **Assess for breach** — run the 4-factor breach risk assessment (see [Breach Notification](#)) to decide if notification is required.
+   - **Document & improve** — record the timeline and update controls.
+3. **List who does what** and the contacts: Security Officer, IT/MSP, legal, cyber-insurance carrier, and (if needed) law enforcement.
+4. **Maintain an incident log** — every incident, even minor ones, with date, description, response, and outcome.
+5. **Test it** at least annually with a tabletop walkthrough (see [Test Contingency Plans](#)).
+
+### What an auditor looks for
+- A **written plan** *and* a **maintained log** showing incidents were handled per the plan.
+
+> ⚠️ **Most common mistake:** no log. An empty-but-maintained log is fine; *no* log suggests incidents were ignored or hidden.
+
+**Evidence to attach:** the incident-response plan and your incident log.`,
     sortOrder: 11,
   },
   {
@@ -132,6 +395,25 @@ const SECURITY_TASKS: {
     title: "Maintain Data Backup Plan",
     description:
       "Establish procedures to create and maintain retrievable, exact copies of ePHI. Test restorations regularly to confirm backups actually work. Evidence: backup schedule and test restoration records.",
+    guide: `## How to comply
+
+Backups are your last line of defense against ransomware and hardware failure. A backup you've never tested is just a hope — the requirement is **retrievable, exact copies**.
+
+### Step-by-step
+
+1. **Identify everything to back up:** the EHR database, document/imaging stores, and any local files holding ePHI.
+2. **Follow the 3-2-1 rule:** **3** copies, on **2** different media, with **1** offsite (cloud or physically remote).
+3. **Automate and schedule** backups (daily for active clinical data) so they don't depend on someone remembering.
+4. **Encrypt backups** at rest and in transit — a backup drive is ePHI and must be protected like the original.
+5. **Test restores regularly.** Quarterly, actually restore a sample and confirm the data opens and is complete. Log each test.
+6. **Confirm BAAs** are in place with any cloud backup vendor.
+
+### What an auditor looks for
+- A **backup schedule** *and* **test-restoration records** — proof the backups actually work, not just run.
+
+> ⚠️ **Most common mistake:** backups that silently fail for months, discovered only during a real disaster. Test restores are the control.
+
+**Evidence to attach:** the backup schedule/configuration and dated test-restoration records.`,
     sortOrder: 12,
   },
   {
@@ -140,6 +422,27 @@ const SECURITY_TASKS: {
     title: "Maintain Disaster Recovery Plan",
     description:
       "Establish procedures to restore any loss of data and continue critical business processes after an emergency such as fire, flood, or ransomware. Evidence: written disaster recovery plan with recovery time and recovery point objectives.",
+    guide: `## How to comply
+
+A Disaster Recovery Plan answers a simple question: *if our systems go down today, how do we keep treating patients and get the data back?* It builds on your backups but adds the people and process.
+
+### Step-by-step
+
+1. **List your critical systems** in priority order — EHR first, then scheduling, billing, etc.
+2. **Set targets for each:**
+   - **RTO (Recovery Time Objective)** — how fast it must be back (e.g., EHR within 24 hours).
+   - **RPO (Recovery Point Objective)** — how much data loss is tolerable (e.g., no more than 24 hours, set by backup frequency).
+3. **Write the recovery steps:** who to call (IT/MSP, EHR vendor, cyber-insurance), how to restore from backup, and how to verify integrity.
+4. **Plan emergency-mode operations** — how you'll see patients on paper while systems are down, and how you'll reconcile records afterward.
+5. **Keep an offline copy** of the plan and key contacts (a ransomware event may lock you out of your own systems).
+6. **Test annually** (see [Test Contingency Plans](#)).
+
+### What an auditor looks for
+- A **written plan with RTO/RPO** for critical systems and clear recovery procedures.
+
+> ⚠️ **Most common mistake:** storing the only copy of the recovery plan on the very server that goes down. Keep it accessible offline.
+
+**Evidence to attach:** the written disaster recovery plan including RTO/RPO objectives.`,
     sortOrder: 13,
   },
   {
@@ -148,6 +451,26 @@ const SECURITY_TASKS: {
     title: "Test Contingency Plans Annually",
     description:
       "Implement procedures for periodic testing and revision of contingency plans, including backup, disaster recovery, and emergency mode operation plans. Evidence: test schedule and documented test results.",
+    guide: `## How to comply
+
+A plan you've never rehearsed will fail when you need it. This safeguard requires you to **test and revise** your backup, disaster-recovery, and emergency-operations plans on a schedule.
+
+### Step-by-step
+
+1. **Run a tabletop exercise** at least annually. Gather the team and walk through a realistic scenario aloud:
+   - *"It's Monday 8 a.m. and ransomware has locked the EHR. What do we do first?"*
+   - Step through detection, who calls whom, restoring backups, seeing patients on paper, and notification decisions.
+2. **Do at least one technical test** — actually restore from backup and confirm the data is complete and usable (this overlaps with your [Backup Plan](#) restore test).
+3. **Capture an after-action report:** what worked, what broke, gaps found, and time to recover vs. your RTO.
+4. **Revise the plans** to fix every gap the test exposed — that revision *is* the point of testing.
+5. **Schedule the next test** and keep the cadence going year over year.
+
+### What an auditor looks for
+- A **test schedule** and **documented results** (after-action notes), plus evidence plans were **updated** based on findings.
+
+> ⚠️ **Most common mistake:** testing once for the audit and never again, or testing without writing anything down. The documentation is the evidence.
+
+**Evidence to attach:** the contingency-test schedule and documented test results / after-action report.`,
     sortOrder: 14,
   },
   {
@@ -156,6 +479,28 @@ const SECURITY_TASKS: {
     title: "Implement Mobile Device Management Policy",
     description:
       "Establish policies for any mobile device that accesses ePHI, covering encryption, screen locks, remote wipe capability, and enrollment in mobile device management. Evidence: written MDM policy and device enrollment records.",
+    guide: `## How to comply
+
+Phones, tablets, and laptops walk out the door every day. If any of them can reach ePHI — even just email — they need controls, because a lost device is one of the most common reportable breaches.
+
+### Step-by-step
+
+1. **Inventory mobile devices** that touch ePHI, including personal phones used for work email (BYOD).
+2. **Require baseline controls on each:**
+   - **Encryption** (default on modern iOS/Android; enforce it).
+   - **Screen lock** with a strong PIN/biometric and short auto-lock timeout.
+   - **Remote wipe** capability if lost or stolen.
+   - Automatic OS/security updates.
+3. **Decide BYOD vs. company-owned.** If you allow personal devices, require enrollment and the right to wipe at least the work container.
+4. **Use an MDM/MAM tool** (Microsoft Intune, Jamf, Google endpoint management) to enforce these settings centrally and prove enforcement.
+5. **Write the policy** and have staff acknowledge it: what's allowed, required settings, and the duty to report a lost device immediately.
+
+### What an auditor looks for
+- A **written MDM policy** and **enrollment records** showing devices are actually managed and encrypted.
+
+> ⚠️ **Most common mistake:** ignoring personal phones that sync work email. If it can pull PHI, it's in scope.
+
+**Evidence to attach:** the written mobile-device policy and device enrollment / MDM configuration records.`,
     sortOrder: 15,
   },
   {
@@ -164,6 +509,32 @@ const SECURITY_TASKS: {
     title: "Establish Breach Notification Procedures",
     description:
       "Implement policies for identifying, evaluating, and reporting breaches of unsecured PHI to HHS and affected individuals within required timeframes (60 days for individuals). Evidence: written breach notification policy and a breach risk assessment template.",
+    guide: `## How to comply
+
+When unsecured PHI is exposed, the Breach Notification Rule sets **hard legal deadlines**. You need a written process so you evaluate and report correctly — missing a deadline is itself a violation.
+
+### Step-by-step
+
+1. **Run the 4-factor risk assessment** whenever PHI may have been compromised, to decide if it's a reportable breach:
+   1. Nature and extent of the PHI (identifiers, clinical sensitivity).
+   2. Who used it or to whom it was disclosed.
+   3. Whether the PHI was actually acquired or viewed.
+   4. The extent to which risk has been mitigated.
+   Presume it's a breach unless these show a **low probability** of compromise.
+2. **Know the notification deadlines:**
+   - **Affected individuals:** without unreasonable delay, **no later than 60 days** from discovery.
+   - **HHS (OCR):** breaches affecting **500+** individuals — within 60 days; **under 500** — log them and report annually (within 60 days of year-end).
+   - **Media:** for breaches affecting **500+** residents of a state/jurisdiction.
+3. **Prepare notification templates** with the required content: what happened, PHI involved, steps individuals should take, what you're doing, and contact info.
+4. **Note the encryption safe harbor:** properly encrypted PHI that's lost is generally **not** a reportable breach — a strong reason to encrypt everything.
+5. **Document every evaluation**, including incidents you conclude are *not* breaches and why.
+
+### What an auditor looks for
+- A **written policy**, a **breach risk-assessment template**, and a **breach log**.
+
+> ⚠️ **Most common mistake:** treating every incident as automatically reportable (or automatically not). The 4-factor assessment, documented, is what's required.
+
+**Evidence to attach:** the breach-notification policy, your 4-factor risk-assessment template, and the breach log.`,
     sortOrder: 16,
   },
   // PHYSICAL

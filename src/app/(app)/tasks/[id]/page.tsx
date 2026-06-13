@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, ClipboardCheck } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { StatusSelect } from "@/components/tasks/status-select";
 import { TaskDetailsForm } from "@/components/tasks/task-details-form";
 import { EvidenceSection } from "@/components/evidence/evidence-section";
 import { CategoryBadge } from "@/components/category-badge";
+import { Markdown } from "@/components/markdown";
 import {
   Card,
   CardContent,
@@ -90,6 +91,23 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           </p>
         </CardContent>
       </Card>
+
+      {task.template.guide && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ClipboardCheck className="h-4 w-4 text-primary" />
+              How to comply
+            </CardTitle>
+            <CardDescription>
+              A step-by-step walkthrough for this requirement.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Markdown>{task.template.guide}</Markdown>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-3">
