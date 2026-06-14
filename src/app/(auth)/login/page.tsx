@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -32,6 +32,22 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+
+  // Surface OAuth / email-confirmation failures redirected here by the auth
+  // callback (e.g. /login?error=auth_callback_failed) instead of failing
+  // silently, then clean the param out of the URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error")) {
+      toast({
+        variant: "destructive",
+        title: "Sign in failed",
+        description:
+          "We couldn't complete sign in. Please try again or use email and password.",
+      });
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [toast]);
 
   const {
     register,

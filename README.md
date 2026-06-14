@@ -73,6 +73,13 @@ This is a compliance app, so it practices what it preaches:
    npm run dev
    ```
 
+### Deployment note
+
+The Vercel `build` step runs `prisma migrate deploy` (idempotent — applies only
+pending migrations) but **does not** seed. The seed (`npm run db:seed`) is
+idempotent and populates framework reference data; run it once after the first
+deploy, and again whenever new frameworks/templates are added.
+
 ## v2 features
 
 - **Stripe billing** — $79/mo subscription via Stripe Checkout, billing

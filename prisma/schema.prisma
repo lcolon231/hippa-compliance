@@ -139,6 +139,9 @@ model ComplianceTask {
 
   @@unique([organizationId, templateId])
   @@index([organizationId, status])
+  // Supports the reminder cron's cross-org scan over due/assigned tasks.
+  @@index([dueDate])
+  @@index([assigneeId])
 }
 
 enum TaskStatus {
