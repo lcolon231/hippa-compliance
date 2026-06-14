@@ -9,7 +9,7 @@ import {
 } from "@react-pdf/renderer";
 import {
   CATEGORY_LABELS,
-  CATEGORY_ORDER,
+  FRAMEWORK_CATEGORY_ORDER,
   STATUS_LABELS,
   calculateComplianceScore,
 } from "@/lib/utils";
@@ -21,12 +21,21 @@ export interface ReportTask {
   status: string;
   completedAt: Date | null;
   evidenceCount: number;
+  frameworkName: string;
+  frameworkSlug: string;
+}
+
+export interface ReportFramework {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export interface ReportData {
   orgName: string;
   generatedAt: Date;
   score: number;
+  frameworks: ReportFramework[];
   tasks: ReportTask[];
 }
 
@@ -36,18 +45,28 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontFamily: "Helvetica-Bold", marginBottom: 4 },
   subtitle: { fontSize: 11, color: "#555" },
   scoreBlock: {
-    marginBottom: 24,
+    marginBottom: 20,
     padding: 16,
     backgroundColor: "#f1f5f9",
     borderRadius: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 24,
   },
-  scoreLabel: { fontSize: 11, color: "#555", marginBottom: 4 },
-  scoreValue: { fontSize: 32, fontFamily: "Helvetica-Bold" },
+  scoreLabel: { fontSize: 11, color: "#555", marginBottom: 2 },
+  scoreValue: { fontSize: 36, fontFamily: "Helvetica-Bold" },
   sectionTitle: {
     fontSize: 13,
     fontFamily: "Helvetica-Bold",
     marginTop: 16,
     marginBottom: 8,
+  },
+  fwTitle: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    marginTop: 12,
+    marginBottom: 6,
+    color: "#1e40af",
   },
   catRow: {
     flexDirection: "row",
@@ -70,11 +89,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e2e8f0",
   },
-  colTitle: { width: "40%", paddingRight: 6 },
-  colCitation: { width: "20%" },
-  colStatus: { width: "15%" },
-  colDate: { width: "15%" },
-  colEvidence: { width: "10%", textAlign: "right" },
+  colTitle: { width: "35%", paddingRight: 6 },
+  colCitation: { width: "18%" },
+  colFramework: { width: "20%" },
+  colStatus: { width: "13%" },
+  colDate: { width: "9%" },
+  colEvidence: { width: "5%", textAlign: "right" },
   footer: {
     position: "absolute",
     bottom: 24,
@@ -96,15 +116,23 @@ function formatDate(date: Date | null): string {
 }
 
 function ReportDocument({ data }: { data: ReportData }) {
-  const categoryScores = CATEGORY_ORDER.map((category) => {
-    const catTasks = data.tasks.filter((t) => t.category === category);
-    return {
-      category,
-      score: calculateComplianceScore(catTasks),
-      complete: catTasks.filter((t) => t.status === "COMPLETE").length,
-      total: catTasks.filter((t) => t.status !== "NOT_APPLICABLE").length,
-    };
-  }).filter((c) => c.total > 0 || true);
+  const frameworkBreakdowns = data.frameworks.map((fw) => {
+    const fwTasks = data.tasks.filter((t) => t.frameworkSlug === fw.slug);
+    const categoryOrder = FRAMEWORK_CATEGORY_ORDER[fw.slug] ?? [];
+    const categories = categoryOrder
+      .map((cat) => {
+        const catTasks = fwTasks.filter((t) => t.category === cat);
+        return {
+          category: cat,
+          complete: catTasks.filter((t) => t.status === "COMPLETE").length,
+          total: catTasks.filter((t) => t.status !== "NOT_APPLICABLE").length,
+          score: calculateComplianceScore(catTasks),
+        };
+      })
+      .filter((c) => c.total > 0);
+
+    return { fw, score: calculateComplianceScore(fwTasks), categories };
+  });
 
   return (
     <Document>
@@ -118,17 +146,32 @@ function ReportDocument({ data }: { data: ReportData }) {
         </View>
 
         <View style={styles.scoreBlock}>
-          <Text style={styles.scoreLabel}>Overall Compliance Score</Text>
-          <Text style={styles.scoreValue}>{data.score}%</Text>
+          <View>
+            <Text style={styles.scoreLabel}>Overall Compliance Score</Text>
+            <Text style={styles.scoreValue}>{data.score}%</Text>
+          </View>
+          <View>
+            <Text style={styles.scoreLabel}>Frameworks tracked</Text>
+            <Text style={{ fontSize: 14, fontFamily: "Helvetica-Bold" }}>
+              {data.frameworks.length}
+            </Text>
+          </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Category Breakdown</Text>
-        {categoryScores.map((c) => (
-          <View key={c.category} style={styles.catRow}>
-            <Text>{CATEGORY_LABELS[c.category]}</Text>
-            <Text>
-              {c.complete}/{c.total} complete — {c.score}%
+        <Text style={styles.sectionTitle}>Framework Breakdown</Text>
+        {frameworkBreakdowns.map(({ fw, score, categories }) => (
+          <View key={fw.id}>
+            <Text style={styles.fwTitle}>
+              {fw.name} — {score}%
             </Text>
+            {categories.map((c) => (
+              <View key={c.category} style={styles.catRow}>
+                <Text>{CATEGORY_LABELS[c.category]}</Text>
+                <Text>
+                  {c.complete}/{c.total} — {c.score}%
+                </Text>
+              </View>
+            ))}
           </View>
         ))}
 
@@ -143,14 +186,16 @@ function ReportDocument({ data }: { data: ReportData }) {
         <View style={styles.tableHeader}>
           <Text style={styles.colTitle}>Task</Text>
           <Text style={styles.colCitation}>Citation</Text>
+          <Text style={styles.colFramework}>Framework</Text>
           <Text style={styles.colStatus}>Status</Text>
-          <Text style={styles.colDate}>Completed</Text>
+          <Text style={styles.colDate}>Done</Text>
           <Text style={styles.colEvidence}>Files</Text>
         </View>
         {data.tasks.map((task, i) => (
           <View key={i} style={styles.tableRow} wrap={false}>
             <Text style={styles.colTitle}>{task.title}</Text>
             <Text style={styles.colCitation}>{task.citation}</Text>
+            <Text style={styles.colFramework}>{task.frameworkName}</Text>
             <Text style={styles.colStatus}>
               {STATUS_LABELS[task.status] ?? task.status}
             </Text>

@@ -6,7 +6,7 @@ import {
   calculateComplianceScore,
   formatDate,
   CATEGORY_LABELS,
-  CATEGORY_ORDER,
+  FRAMEWORK_CATEGORY_ORDER,
   STATUS_LABELS,
   cn,
 } from "@/lib/utils";
@@ -20,34 +20,65 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const user = await requireUser();
 
-  const tasks = await prisma.complianceTask.findMany({
+  const enabledFrameworks = await prisma.orgFramework.findMany({
     where: { organizationId: user.organizationId },
+    include: { framework: { select: { id: true, name: true, slug: true } } },
+    orderBy: { framework: { sortOrder: "asc" } },
+  });
+  const enabledFrameworkIds = enabledFrameworks.map((f) => f.frameworkId);
+
+  const tasks = await prisma.complianceTask.findMany({
+    where: {
+      organizationId: user.organizationId,
+      template: { frameworkId: { in: enabledFrameworkIds } },
+    },
     include: {
       template: {
-        select: { title: true, citation: true, category: true, sortOrder: true },
+        select: {
+          title: true,
+          citation: true,
+          category: true,
+          sortOrder: true,
+          frameworkId: true,
+        },
       },
       assignee: { select: { name: true, email: true } },
     },
     orderBy: { template: { sortOrder: "asc" } },
   });
 
-  const score = calculateComplianceScore(tasks);
+  const overallScore = calculateComplianceScore(tasks);
 
-  const categoryStats = CATEGORY_ORDER.map((category) => {
-    const catTasks = tasks.filter((t) => t.template.category === category);
-    const applicable = catTasks.filter((t) => t.status !== "NOT_APPLICABLE");
-    const complete = applicable.filter((t) => t.status === "COMPLETE").length;
+  // Per-framework breakdown
+  const frameworkStats = enabledFrameworks.map(({ framework }) => {
+    const fwTasks = tasks.filter(
+      (t) => t.template.frameworkId === framework.id
+    );
+    const categoryOrder = FRAMEWORK_CATEGORY_ORDER[framework.slug] ?? [];
+    const categories = categoryOrder
+      .map((cat) => {
+        const catTasks = fwTasks.filter((t) => t.template.category === cat);
+        return {
+          category: cat,
+          score: calculateComplianceScore(catTasks),
+          complete: catTasks.filter((t) => t.status === "COMPLETE").length,
+          total: catTasks.filter((t) => t.status !== "NOT_APPLICABLE").length,
+        };
+      })
+      .filter((c) => c.total > 0);
+
     return {
-      category,
-      complete,
-      total: applicable.length,
-      score: calculateComplianceScore(catTasks),
+      framework,
+      score: calculateComplianceScore(fwTasks),
+      taskCount: fwTasks.length,
+      categories,
     };
   });
 
@@ -62,60 +93,72 @@ export default async function DashboardPage() {
     )
     .sort((a, b) => a.dueDate!.getTime() - b.dueDate!.getTime());
 
-  const statusCounts = (["NOT_STARTED", "IN_PROGRESS", "COMPLETE", "NOT_APPLICABLE"] as const).map(
-    (status) => ({
-      status,
-      count: tasks.filter((t) => t.status === status).length,
-    })
-  );
+  const statusCounts = (
+    ["NOT_STARTED", "IN_PROGRESS", "COMPLETE", "NOT_APPLICABLE"] as const
+  ).map((status) => ({
+    status,
+    count: tasks.filter((t) => t.status === status).length,
+  }));
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          {user.organization.name} — HIPAA Security Rule compliance at a glance
+          {user.organization.name} — {enabledFrameworks.length} framework
+          {enabledFrameworks.length === 1 ? "" : "s"} tracked
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Score ring */}
+        {/* Score ring — overall across all enabled frameworks */}
         <Card className="flex flex-col items-center justify-center py-8 lg:row-span-2">
           <CardHeader className="pb-2 text-center">
-            <CardTitle className="text-lg">Compliance Score</CardTitle>
-            <CardDescription>
-              Complete ÷ applicable tasks
-            </CardDescription>
+            <CardTitle className="text-lg">Overall Compliance</CardTitle>
+            <CardDescription>All active frameworks</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScoreRing score={score} />
+            <ScoreRing score={overallScore} />
           </CardContent>
         </Card>
 
-        {/* Category bars */}
+        {/* Per-framework breakdown */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">By Category</CardTitle>
+            <CardTitle className="text-lg">By Framework</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {categoryStats.map((cat) => (
-              <div key={cat.category}>
-                <div className="mb-1 flex items-center justify-between text-sm">
-                  <span className="font-medium">
-                    {CATEGORY_LABELS[cat.category]}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {cat.complete}/{cat.total} · {cat.score}%
+          <CardContent className="space-y-6">
+            {frameworkStats.map((fw, i) => (
+              <div key={fw.framework.id}>
+                {i > 0 && <Separator className="mb-6" />}
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="font-medium">{fw.framework.name}</p>
+                  <span className="text-sm text-muted-foreground">
+                    {fw.score}% — {fw.taskCount} tasks
                   </span>
                 </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all",
-                      CATEGORY_BAR_COLORS[cat.category]
-                    )}
-                    style={{ width: `${cat.score}%` }}
-                  />
+                <div className="space-y-2">
+                  {fw.categories.map((cat) => (
+                    <div key={cat.category}>
+                      <div className="mb-1 flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          {CATEGORY_LABELS[cat.category]}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {cat.complete}/{cat.total}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all",
+                            CATEGORY_BAR_COLORS[cat.category] ?? "bg-primary"
+                          )}
+                          style={{ width: `${cat.score}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -130,10 +173,7 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {statusCounts.map(({ status, count }) => (
-                <div
-                  key={status}
-                  className="rounded-lg border p-4 text-center"
-                >
+                <div key={status} className="rounded-lg border p-4 text-center">
                   <p className="text-3xl font-bold tabular-nums">{count}</p>
                   <p className="text-xs text-muted-foreground">
                     {STATUS_LABELS[status]}
@@ -182,7 +222,7 @@ export default async function DashboardPage() {
                         {task.template.title}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        § {task.template.citation} · due{" "}
+                        {task.template.citation} · due{" "}
                         {formatDate(task.dueDate)}
                         {task.assignee &&
                           ` · ${task.assignee.name ?? task.assignee.email}`}

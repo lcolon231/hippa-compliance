@@ -13,10 +13,24 @@ const SIGNED_URL_EXPIRY_SECONDS = 60;
 export async function generateReport() {
   const user = await requireUser();
 
-  const tasks = await prisma.complianceTask.findMany({
+  const enabledFrameworks = await prisma.orgFramework.findMany({
     where: { organizationId: user.organizationId },
+    include: { framework: { select: { id: true, name: true, slug: true } } },
+    orderBy: { framework: { sortOrder: "asc" } },
+  });
+  const enabledFrameworkIds = enabledFrameworks.map((f) => f.frameworkId);
+
+  const tasks = await prisma.complianceTask.findMany({
+    where: {
+      organizationId: user.organizationId,
+      template: { frameworkId: { in: enabledFrameworkIds } },
+    },
     include: {
-      template: true,
+      template: {
+        include: {
+          framework: { select: { id: true, name: true, slug: true } },
+        },
+      },
       _count: { select: { evidence: true } },
     },
     orderBy: { template: { sortOrder: "asc" } },
@@ -28,6 +42,7 @@ export async function generateReport() {
     orgName: user.organization.name,
     generatedAt: new Date(),
     score,
+    frameworks: enabledFrameworks.map((f) => f.framework),
     tasks: tasks.map((t) => ({
       title: t.template.title,
       citation: t.template.citation,
@@ -35,6 +50,8 @@ export async function generateReport() {
       status: t.status,
       completedAt: t.completedAt,
       evidenceCount: t._count.evidence,
+      frameworkName: t.template.framework?.name ?? "—",
+      frameworkSlug: t.template.framework?.slug ?? "",
     })),
   });
 

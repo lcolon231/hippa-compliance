@@ -24,7 +24,7 @@ vault, and one-click audit-ready PDF reports.
 | `/tasks` | Filterable checklist (category / status / assignee) with inline status updates |
 | `/tasks/[id]` | Citation + description, notes, due date, assignee, evidence upload |
 | `/reports` | Generate + download PDF compliance reports; export audit trail |
-| `/settings` | Org name, team invites, member management (admin-only) |
+| `/settings` | Org name, team invites, member management, Stripe billing (admin-only) |
 
 **Compliance score** = `COMPLETE / (total − NOT_APPLICABLE) × 100`.
 
@@ -73,10 +73,32 @@ This is a compliance app, so it practices what it preaches:
    npm run dev
    ```
 
-## Deferred to v2
+### Deployment note
 
-Stripe billing, email reminders for due dates, multi-framework support,
-MSP white-label multi-tenancy, automated evidence collection.
+The Vercel `build` step runs `prisma migrate deploy` (idempotent — applies only
+pending migrations) but **does not** seed. The seed (`npm run db:seed`) is
+idempotent and populates framework reference data; run it once after the first
+deploy, and again whenever new frameworks/templates are added.
+
+## v2 features
+
+- **Stripe billing** — $79/mo subscription via Stripe Checkout, billing
+  portal for card/invoice management, webhook-driven status sync
+  (`/api/webhooks/stripe`), and an in-app banner when a subscription is
+  past due or canceled. Requires `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`
+  (a recurring $79/mo price), and `STRIPE_WEBHOOK_SECRET` (point a
+  webhook at `/api/webhooks/stripe` for `checkout.session.completed`,
+  `customer.subscription.updated`, `customer.subscription.deleted`).
+- **Email due-date reminders** — daily Vercel cron
+  (`/api/cron/reminders`, see `vercel.json`) emails each assignee a
+  digest of overdue and due-within-7-days tasks via Resend, with a
+  3-day per-task cooldown. Requires `RESEND_API_KEY`, `EMAIL_FROM`,
+  and `CRON_SECRET`.
+
+## Still deferred
+
+Multi-framework support, MSP white-label multi-tenancy, automated
+evidence collection.
 
 ---
 

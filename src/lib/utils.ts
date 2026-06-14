@@ -28,12 +28,25 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+// ── Category metadata ──────────────────────────────────────────────────────────
+
 export const CATEGORY_LABELS: Record<string, string> = {
+  // HIPAA Security Rule
   ADMINISTRATIVE: "Administrative Safeguards",
   PHYSICAL: "Physical Safeguards",
   TECHNICAL: "Technical Safeguards",
   ORGANIZATIONAL: "Organizational (BAAs)",
   POLICIES: "Policies & Documentation",
+  // HIPAA Privacy Rule
+  PRIVACY_PRACTICES: "Patient Rights & Notices",
+  PRIVACY_USES: "Uses & Disclosures",
+  PRIVACY_WORKFORCE: "Workforce Requirements",
+  // NIST CSF
+  CSF_IDENTIFY: "Identify",
+  CSF_PROTECT: "Protect",
+  CSF_DETECT: "Detect",
+  CSF_RESPOND: "Respond",
+  CSF_RECOVER: "Recover",
 };
 
 export const CATEGORY_CITATIONS: Record<string, string> = {
@@ -42,7 +55,55 @@ export const CATEGORY_CITATIONS: Record<string, string> = {
   TECHNICAL: "§ 164.312",
   ORGANIZATIONAL: "§ 164.314",
   POLICIES: "§ 164.316",
+  PRIVACY_PRACTICES: "§ 164.520–528",
+  PRIVACY_USES: "§ 164.502–514",
+  PRIVACY_WORKFORCE: "§ 164.530",
+  CSF_IDENTIFY: "ID",
+  CSF_PROTECT: "PR",
+  CSF_DETECT: "DE",
+  CSF_RESPOND: "RS",
+  CSF_RECOVER: "RC",
 };
+
+/** Ordered category lists per framework slug */
+export const FRAMEWORK_CATEGORY_ORDER: Record<string, readonly string[]> = {
+  "hipaa-security": [
+    "ADMINISTRATIVE",
+    "PHYSICAL",
+    "TECHNICAL",
+    "ORGANIZATIONAL",
+    "POLICIES",
+  ],
+  "hipaa-privacy": [
+    "PRIVACY_PRACTICES",
+    "PRIVACY_USES",
+    "PRIVACY_WORKFORCE",
+  ],
+  "nist-csf": [
+    "CSF_IDENTIFY",
+    "CSF_PROTECT",
+    "CSF_DETECT",
+    "CSF_RESPOND",
+    "CSF_RECOVER",
+  ],
+};
+
+/** All categories in display order (used by task filters etc.) */
+export const CATEGORY_ORDER = [
+  "ADMINISTRATIVE",
+  "PHYSICAL",
+  "TECHNICAL",
+  "ORGANIZATIONAL",
+  "POLICIES",
+  "PRIVACY_PRACTICES",
+  "PRIVACY_USES",
+  "PRIVACY_WORKFORCE",
+  "CSF_IDENTIFY",
+  "CSF_PROTECT",
+  "CSF_DETECT",
+  "CSF_RESPOND",
+  "CSF_RECOVER",
+] as const;
 
 export const STATUS_LABELS: Record<string, string> = {
   NOT_STARTED: "Not Started",
@@ -50,11 +111,3 @@ export const STATUS_LABELS: Record<string, string> = {
   COMPLETE: "Complete",
   NOT_APPLICABLE: "N/A",
 };
-
-export const CATEGORY_ORDER = [
-  "ADMINISTRATIVE",
-  "PHYSICAL",
-  "TECHNICAL",
-  "ORGANIZATIONAL",
-  "POLICIES",
-] as const;

@@ -2,16 +2,42 @@ import { PrismaClient, Category } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-type TemplateSeed = {
+// ── Framework definitions ─────────────────────────────────────────────────────
+
+const FRAMEWORKS = [
+  {
+    slug: "hipaa-security",
+    name: "HIPAA Security Rule",
+    description:
+      "45 CFR Part 164 §164.302–318 — Administrative, Physical, and Technical safeguards for electronic protected health information (ePHI). Required for all covered entities and business associates.",
+    sortOrder: 1,
+  },
+  {
+    slug: "hipaa-privacy",
+    name: "HIPAA Privacy Rule",
+    description:
+      "45 CFR Part 164 §164.500–534 — Standards for protecting PHI in all forms, patient rights, and permitted uses and disclosures. Required for all covered entities.",
+    sortOrder: 2,
+  },
+  {
+    slug: "nist-csf",
+    name: "NIST Cybersecurity Framework",
+    description:
+      "NIST CSF 1.1 — A voluntary framework providing standards, guidelines, and best practices to manage cybersecurity risk across five functions: Identify, Protect, Detect, Respond, Recover.",
+    sortOrder: 3,
+  },
+];
+
+// ── HIPAA Security Rule tasks (1–50) ─────────────────────────────────────────
+
+const SECURITY_TASKS: {
   category: Category;
   citation: string;
   title: string;
   description: string;
   sortOrder: number;
-};
-
-const templates: TemplateSeed[] = [
-  // ── ADMINISTRATIVE (164.308) ──────────────────────────────────────────
+}[] = [
+  // ADMINISTRATIVE
   {
     category: "ADMINISTRATIVE",
     citation: "164.308(a)(1)(ii)(A)",
@@ -81,7 +107,7 @@ const templates: TemplateSeed[] = [
     citation: "164.308(a)(5)",
     title: "Provide Annual Security Awareness Training",
     description:
-      "Train all workforce members — including management — on security awareness topics such as malware protection, log-in monitoring, and password hygiene. Repeat annually and for all new hires. Evidence: training attendance records and training materials.",
+      "Train all workforce members on security awareness topics such as malware protection, log-in monitoring, and password hygiene. Repeat annually and for all new hires. Evidence: training attendance records and training materials.",
     sortOrder: 9,
   },
   {
@@ -140,8 +166,7 @@ const templates: TemplateSeed[] = [
       "Implement policies for identifying, evaluating, and reporting breaches of unsecured PHI to HHS and affected individuals within required timeframes (60 days for individuals). Evidence: written breach notification policy and a breach risk assessment template.",
     sortOrder: 16,
   },
-
-  // ── PHYSICAL (164.310) ────────────────────────────────────────────────
+  // PHYSICAL
   {
     category: "PHYSICAL",
     citation: "164.310(a)(1)",
@@ -214,14 +239,13 @@ const templates: TemplateSeed[] = [
       "Maintain a record of the movements of hardware and electronic media containing ePHI and the person responsible for each item. Evidence: hardware inventory spreadsheet and movement log.",
     sortOrder: 25,
   },
-
-  // ── TECHNICAL (164.312) ───────────────────────────────────────────────
+  // TECHNICAL
   {
     category: "TECHNICAL",
     citation: "164.312(a)(2)(i)",
     title: "Enforce Unique User IDs",
     description:
-      "Assign a unique name and/or number for identifying and tracking each user's identity. Shared logins are prohibited — every staff member needs their own account in the EHR and on workstations. Evidence: user account list and policy prohibiting shared logins.",
+      "Assign a unique name and/or number for identifying and tracking each user's identity. Shared logins are prohibited. Evidence: user account list and policy prohibiting shared logins.",
     sortOrder: 26,
   },
   {
@@ -237,7 +261,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(a)(2)(iii)",
     title: "Enable Automatic Logoff on All Systems",
     description:
-      "Implement electronic procedures that terminate a session after a predetermined period of inactivity. Set screen locks to 15 minutes or less on every workstation and EHR session. Evidence: system configuration screenshots and the policy stating the timeout.",
+      "Implement electronic procedures that terminate a session after a predetermined period of inactivity. Set screen locks to 15 minutes or less. Evidence: system configuration screenshots and policy stating the timeout.",
     sortOrder: 28,
   },
   {
@@ -245,7 +269,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(a)(2)(iv)",
     title: "Encrypt ePHI at Rest",
     description:
-      "Implement a mechanism to encrypt and decrypt ePHI stored on all devices and media — laptops, desktops, servers, and USB drives. Use full-disk encryption (BitLocker, FileVault) with AES-256 or equivalent. Evidence: encryption status reports or screenshots showing encryption enabled.",
+      "Implement a mechanism to encrypt and decrypt ePHI stored on all devices and media. Use full-disk encryption (BitLocker, FileVault) with AES-256 or equivalent. Evidence: encryption status reports or screenshots.",
     sortOrder: 29,
   },
   {
@@ -253,7 +277,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(b)",
     title: "Enable Audit Logging on EHR and Systems",
     description:
-      "Implement hardware, software, or procedural mechanisms that record and examine activity in systems that contain or use ePHI. Confirm audit logging is enabled in your EHR. Evidence: audit log samples and log retention configuration.",
+      "Implement hardware, software, or procedural mechanisms that record and examine activity in systems that contain or use ePHI. Evidence: audit log samples and log retention configuration.",
     sortOrder: 30,
   },
   {
@@ -261,7 +285,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(b)",
     title: "Implement Intrusion Detection or Alerting",
     description:
-      "Deploy tooling that detects and alerts on unauthorized access attempts to systems containing ePHI, such as endpoint protection with alerting or a managed detection service. Evidence: tool configuration and a sample alert log.",
+      "Deploy tooling that detects and alerts on unauthorized access attempts to systems containing ePHI. Evidence: tool configuration and sample alert log.",
     sortOrder: 31,
   },
   {
@@ -269,7 +293,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(c)",
     title: "Implement Data Integrity Controls",
     description:
-      "Implement electronic mechanisms to corroborate that ePHI has not been altered or destroyed in an unauthorized manner, such as checksums, versioned backups, or integrity monitoring. Evidence: integrity control configuration documentation.",
+      "Implement electronic mechanisms to corroborate that ePHI has not been altered or destroyed in an unauthorized manner. Evidence: integrity control configuration documentation.",
     sortOrder: 32,
   },
   {
@@ -277,7 +301,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(d)",
     title: "Verify Identity Before PHI Disclosure",
     description:
-      "Implement procedures to verify that a person or entity seeking access to ePHI is the one claimed — for phone requests, portal access, and system logins alike. Evidence: written authentication/verification policy.",
+      "Implement procedures to verify that a person or entity seeking access to ePHI is the one claimed. Evidence: written authentication/verification policy.",
     sortOrder: 33,
   },
   {
@@ -285,7 +309,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(d)",
     title: "Implement Multi-Factor Authentication",
     description:
-      "Require MFA for all accounts with access to systems containing ePHI, including the EHR, email, and remote access. Evidence: MFA configuration screenshots and enrollment records.",
+      "Require MFA for all accounts with access to systems containing ePHI. Evidence: MFA configuration screenshots and enrollment records.",
     sortOrder: 34,
   },
   {
@@ -293,7 +317,7 @@ const templates: TemplateSeed[] = [
     citation: "164.312(e)",
     title: "Encrypt ePHI in Transit",
     description:
-      "Implement technical security measures to guard against unauthorized access to ePHI transmitted over networks. Use TLS 1.2+ for all web traffic and secure/encrypted email for any PHI sent outside the office. Evidence: SSL certificate and secure email configuration.",
+      "Implement technical security measures to guard against unauthorized access to ePHI transmitted over networks. Use TLS 1.2+ for all web traffic. Evidence: SSL certificate and secure email configuration.",
     sortOrder: 35,
   },
   {
@@ -312,14 +336,13 @@ const templates: TemplateSeed[] = [
       "Establish procedures for promptly applying security patches to operating systems, applications, and network equipment. Evidence: patch management policy and patch compliance reports.",
     sortOrder: 37,
   },
-
-  // ── ORGANIZATIONAL (164.314) ──────────────────────────────────────────
+  // ORGANIZATIONAL
   {
     category: "ORGANIZATIONAL",
     citation: "164.308(b) / 164.314(a)",
     title: "Signed BAA with EHR Vendor",
     description:
-      "Ensure a signed Business Associate Agreement is in place with your Electronic Health Record vendor before any ePHI is shared. Evidence: the signed BAA document.",
+      "Ensure a signed Business Associate Agreement is in place with your Electronic Health Record vendor. Evidence: the signed BAA document.",
     sortOrder: 38,
   },
   {
@@ -327,7 +350,7 @@ const templates: TemplateSeed[] = [
     citation: "164.314(a)",
     title: "Signed BAA with IT Provider / MSP",
     description:
-      "Ensure a signed Business Associate Agreement is in place with any IT managed service provider or consultant who can access systems containing ePHI. Evidence: the signed BAA document.",
+      "Ensure a signed Business Associate Agreement is in place with any IT managed service provider with access to ePHI. Evidence: the signed BAA document.",
     sortOrder: 39,
   },
   {
@@ -335,7 +358,7 @@ const templates: TemplateSeed[] = [
     citation: "164.314(a)",
     title: "Signed BAA with Billing Company",
     description:
-      "Ensure a signed Business Associate Agreement is in place with your medical billing company or claims clearinghouse. Evidence: the signed BAA document.",
+      "Ensure a signed Business Associate Agreement is in place with your medical billing company or clearinghouse. Evidence: the signed BAA document.",
     sortOrder: 40,
   },
   {
@@ -343,7 +366,7 @@ const templates: TemplateSeed[] = [
     citation: "164.314(a)",
     title: "Signed BAA with Cloud and Email Providers",
     description:
-      "Ensure signed BAAs are in place with cloud storage and email providers that handle PHI, such as Google Workspace or Microsoft 365. Free consumer tiers typically do not offer BAAs. Evidence: the signed BAA documents.",
+      "Ensure signed BAAs are in place with cloud storage and email providers that handle PHI. Evidence: the signed BAA documents.",
     sortOrder: 41,
   },
   {
@@ -359,7 +382,7 @@ const templates: TemplateSeed[] = [
     citation: "164.314(a)",
     title: "Maintain Business Associate Inventory",
     description:
-      "Maintain a current list of all business associates, the services they perform, the PHI they touch, and each BAA's effective and expiration dates. Evidence: business associate inventory spreadsheet.",
+      "Maintain a current list of all business associates, the services they perform, PHI they touch, and each BAA's effective and expiration dates. Evidence: business associate inventory spreadsheet.",
     sortOrder: 43,
   },
   {
@@ -367,11 +390,10 @@ const templates: TemplateSeed[] = [
     citation: "164.314(a)(2)",
     title: "Review Business Associate Agreements Annually",
     description:
-      "Review all BAAs at least annually to confirm they still meet HIPAA requirements and reflect current vendor relationships; update or terminate as needed. Evidence: BAA review checklist and updated agreements.",
+      "Review all BAAs at least annually to confirm they still meet HIPAA requirements; update or terminate as needed. Evidence: BAA review checklist and updated agreements.",
     sortOrder: 44,
   },
-
-  // ── POLICIES & DOCUMENTATION (164.316) ────────────────────────────────
+  // POLICIES
   {
     category: "POLICIES",
     citation: "164.316(a)",
@@ -393,7 +415,7 @@ const templates: TemplateSeed[] = [
     citation: "164.316(b)(2)(i)",
     title: "Retain Documentation for 6 Years",
     description:
-      "Retain all security policies, procedures, and required documentation for at least six years from the date of creation or the date it was last in effect, whichever is later. Evidence: document retention policy and archive system.",
+      "Retain all security policies, procedures, and required documentation for at least six years from date of creation or last in effect. Evidence: document retention policy and archive system.",
     sortOrder: 47,
   },
   {
@@ -422,26 +444,425 @@ const templates: TemplateSeed[] = [
   },
 ];
 
-async function main() {
-  console.log(`Seeding ${templates.length} task templates...`);
+// ── HIPAA Privacy Rule tasks (51–68) ─────────────────────────────────────────
 
-  for (const t of templates) {
-    // Upsert keyed on sortOrder so re-running the seed is idempotent
+const PRIVACY_TASKS: (typeof SECURITY_TASKS)[number][] = [
+  // PRIVACY_PRACTICES
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.520",
+    title: "Develop and Maintain Notice of Privacy Practices",
+    description:
+      "Create an NPP that accurately describes how you use and disclose PHI, your legal duties, patient rights, and how they can file complaints. Review with legal counsel and update whenever practices materially change. Evidence: current NPP document with date of last review.",
+    sortOrder: 51,
+  },
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.520(c)",
+    title: "Distribute NPP to Patients at First Service",
+    description:
+      "Provide the NPP to each patient at their first service delivery and make good-faith efforts to obtain written acknowledgment of receipt. Evidence: signed patient acknowledgment forms and distribution log.",
+    sortOrder: 52,
+  },
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.520(c)(1)",
+    title: "Post NPP in Facility and on Website",
+    description:
+      "Prominently display the NPP in your facility and on your website (if you have one). Evidence: photo of the posted NPP in reception area and a screenshot of the website page.",
+    sortOrder: 53,
+  },
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.524",
+    title: "Honor Patient Right to Access PHI",
+    description:
+      "Provide patients access to their PHI within 30 days of request (15 days for electronic records). Charge only cost-based fees. Evidence: written access request policy and a log of completed access requests.",
+    sortOrder: 54,
+  },
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.526",
+    title: "Honor Patient Right to Amend PHI",
+    description:
+      "Accept and respond to patient requests to amend their PHI within 60 days. Document acceptances and denials with reasoning. Evidence: amendment request policy and log of amendment decisions.",
+    sortOrder: 55,
+  },
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.528",
+    title: "Provide Accounting of Disclosures",
+    description:
+      "Track non-routine disclosures of PHI for the past 6 years and provide an accounting to patients upon request within 60 days. Evidence: disclosure tracking log.",
+    sortOrder: 56,
+  },
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.522(a)",
+    title: "Honor Patient Right to Request Restrictions",
+    description:
+      "Implement a process for patients to request restrictions on certain uses and disclosures of their PHI. Note: restrictions paid out-of-pocket must be honored. Evidence: restriction request policy and log of decisions.",
+    sortOrder: 57,
+  },
+  {
+    category: "PRIVACY_PRACTICES",
+    citation: "164.522(b)",
+    title: "Honor Confidential Communications Requests",
+    description:
+      "Accommodate reasonable requests from patients to receive PHI via alternative means or at alternative locations. Evidence: confidential communications policy and request log.",
+    sortOrder: 58,
+  },
+  // PRIVACY_USES
+  {
+    category: "PRIVACY_USES",
+    citation: "164.502(b)",
+    title: "Establish Minimum Necessary Standard Policies",
+    description:
+      "Implement policies limiting uses and disclosures of PHI to the minimum necessary to accomplish the intended purpose. Evidence: minimum necessary policies and workforce training records.",
+    sortOrder: 59,
+  },
+  {
+    category: "PRIVACY_USES",
+    citation: "164.514(d)",
+    title: "Identify and Limit Routine Disclosures",
+    description:
+      "Document standard protocols for routine disclosures and limit PHI shared to the minimum necessary for each type of disclosure. Evidence: minimum necessary matrix or policy document.",
+    sortOrder: 60,
+  },
+  {
+    category: "PRIVACY_USES",
+    citation: "164.508",
+    title: "Obtain Valid Authorization for Non-Routine Disclosures",
+    description:
+      "Use a HIPAA-compliant authorization form for uses and disclosures not permitted without patient authorization, including marketing and most research. Evidence: authorization form template and completed authorizations on file.",
+    sortOrder: 61,
+  },
+  {
+    category: "PRIVACY_USES",
+    citation: "164.508 / 164.512",
+    title: "Implement Heightened Protection for Special PHI Categories",
+    description:
+      "Apply heightened protections for psychotherapy notes, HIV/AIDS information, substance abuse treatment records, and genetic information, which require specific authorization beyond standard HIPAA. Evidence: special category PHI policy.",
+    sortOrder: 62,
+  },
+  {
+    category: "PRIVACY_USES",
+    citation: "164.502(a)",
+    title: "Document Permitted Uses and Disclosures",
+    description:
+      "Maintain written policies documenting all permitted uses and disclosures, including treatment, payment, healthcare operations, and public health reporting. Evidence: use and disclosure policy document.",
+    sortOrder: 63,
+  },
+  // PRIVACY_WORKFORCE
+  {
+    category: "PRIVACY_WORKFORCE",
+    citation: "164.530(a)",
+    title: "Designate HIPAA Privacy Officer",
+    description:
+      "Designate an individual responsible for developing and implementing your Privacy Rule policies and procedures. May be the same person as the Security Officer. Evidence: written designation letter or job description naming the Privacy Officer.",
+    sortOrder: 64,
+  },
+  {
+    category: "PRIVACY_WORKFORCE",
+    citation: "164.530(b)",
+    title: "Train Workforce on HIPAA Privacy Rule",
+    description:
+      "Train all workforce members on your privacy policies within a reasonable time of hiring and when policies change materially. Evidence: training attendance records and training materials.",
+    sortOrder: 65,
+  },
+  {
+    category: "PRIVACY_WORKFORCE",
+    citation: "164.530(d)",
+    title: "Implement Privacy Complaint Process",
+    description:
+      "Establish and document a process for patients and others to file privacy complaints, and track all complaints received and their resolution. Evidence: complaint policy and complaint log.",
+    sortOrder: 66,
+  },
+  {
+    category: "PRIVACY_WORKFORCE",
+    citation: "164.530(e)",
+    title: "Apply Sanctions for Privacy Violations",
+    description:
+      "Apply appropriate sanctions against workforce members who violate privacy policies. Evidence: privacy sanction policy and records of any sanctions applied.",
+    sortOrder: 67,
+  },
+  {
+    category: "PRIVACY_WORKFORCE",
+    citation: "164.530(j)",
+    title: "Retain Privacy Documentation for 6 Years",
+    description:
+      "Retain all Privacy Rule policies, procedures, and required documentation for at least 6 years from the date of creation or last effective date. Evidence: document retention policy and archive system.",
+    sortOrder: 68,
+  },
+];
+
+// ── NIST CSF tasks (101–122) ──────────────────────────────────────────────────
+
+const NIST_TASKS: (typeof SECURITY_TASKS)[number][] = [
+  // CSF_IDENTIFY
+  {
+    category: "CSF_IDENTIFY",
+    citation: "ID.AM-1",
+    title: "Maintain Comprehensive Asset Inventory",
+    description:
+      "Identify and document all hardware, software, and data assets within the scope of your cybersecurity program. Update the inventory at least quarterly. Evidence: asset inventory spreadsheet with owner and classification.",
+    sortOrder: 101,
+  },
+  {
+    category: "CSF_IDENTIFY",
+    citation: "ID.AM-3",
+    title: "Document Data Flows for Sensitive Information",
+    description:
+      "Map how sensitive data flows through your organization — creation, transmission, storage, and disposal — so you understand your full attack surface. Evidence: data flow diagrams or data flow documentation.",
+    sortOrder: 102,
+  },
+  {
+    category: "CSF_IDENTIFY",
+    citation: "ID.GV-1",
+    title: "Establish Cybersecurity Governance Structure",
+    description:
+      "Define and document cybersecurity roles, responsibilities, and accountability throughout the organization. Assign leadership accountability for cybersecurity outcomes. Evidence: cybersecurity governance policy and org chart with accountable roles.",
+    sortOrder: 103,
+  },
+  {
+    category: "CSF_IDENTIFY",
+    citation: "ID.GV-4",
+    title: "Integrate Cybersecurity into Risk Management",
+    description:
+      "Incorporate cybersecurity risk into your enterprise risk management processes and budget planning. Evidence: enterprise risk management plan that includes cyber risk with dollar estimates.",
+    sortOrder: 104,
+  },
+  {
+    category: "CSF_IDENTIFY",
+    citation: "ID.RA-1",
+    title: "Conduct Cybersecurity Risk Assessments",
+    description:
+      "Perform periodic risk assessments identifying threats, vulnerabilities, likelihood, and impact to prioritize cybersecurity investments. Evidence: current risk assessment report with threat-vulnerability pairings.",
+    sortOrder: 105,
+  },
+  {
+    category: "CSF_IDENTIFY",
+    citation: "ID.RA-3",
+    title: "Identify and Prioritize Vulnerabilities",
+    description:
+      "Maintain awareness of vulnerabilities in your systems through scanning and threat intelligence, and prioritize remediation based on risk. Evidence: vulnerability management policy and tracked vulnerability register.",
+    sortOrder: 106,
+  },
+  {
+    category: "CSF_IDENTIFY",
+    citation: "ID.RA-6",
+    title: "Define Organizational Risk Tolerance",
+    description:
+      "Document your organization's risk tolerance and use it to guide cybersecurity investment decisions and risk acceptance approvals. Evidence: risk tolerance statement approved by leadership.",
+    sortOrder: 107,
+  },
+  // CSF_PROTECT
+  {
+    category: "CSF_PROTECT",
+    citation: "PR.AC-1",
+    title: "Implement Identity and Access Management",
+    description:
+      "Manage identities and credentials for authorized users, services, and hardware. Enforce least-privilege access and review permissions periodically. Evidence: IAM policy and quarterly access review records.",
+    sortOrder: 108,
+  },
+  {
+    category: "CSF_PROTECT",
+    citation: "PR.AC-3",
+    title: "Manage Remote Access",
+    description:
+      "Manage remote access to assets with controls such as VPN, MFA enforcement, and monitoring of remote sessions. Evidence: remote access policy and VPN or remote access tool configuration.",
+    sortOrder: 109,
+  },
+  {
+    category: "CSF_PROTECT",
+    citation: "PR.AT-1",
+    title: "Train Workforce on Cybersecurity",
+    description:
+      "Provide regular cybersecurity awareness training to all users, including phishing simulations, and test effectiveness. Evidence: training records and phishing simulation results.",
+    sortOrder: 110,
+  },
+  {
+    category: "CSF_PROTECT",
+    citation: "PR.DS-1",
+    title: "Implement Data Protection Controls",
+    description:
+      "Protect data at rest and in transit with encryption and other controls appropriate to data sensitivity. Evidence: encryption configuration documentation and data protection policy.",
+    sortOrder: 111,
+  },
+  {
+    category: "CSF_PROTECT",
+    citation: "PR.DS-3",
+    title: "Manage Removable Media Lifecycle",
+    description:
+      "Manage data storage media throughout its lifecycle — provisioning, use, and secure disposal — to prevent unauthorized disclosure. Evidence: media management policy and disposal records.",
+    sortOrder: 112,
+  },
+  {
+    category: "CSF_PROTECT",
+    citation: "PR.MA-1",
+    title: "Implement Controlled Maintenance Procedures",
+    description:
+      "Perform maintenance and repair of assets in a controlled, authorized, and logged manner. Ensure that remote maintenance is monitored. Evidence: maintenance policy and maintenance log.",
+    sortOrder: 113,
+  },
+  {
+    category: "CSF_PROTECT",
+    citation: "PR.PT-1",
+    title: "Deploy Protective Technology Controls",
+    description:
+      "Manage audit/log records, deploy endpoint protection, firewalls, web filtering, and email security to protect against common attack vectors. Evidence: security technology inventory and configuration documentation.",
+    sortOrder: 114,
+  },
+  // CSF_DETECT
+  {
+    category: "CSF_DETECT",
+    citation: "DE.CM-1",
+    title: "Monitor Networks and Systems Continuously",
+    description:
+      "Continuously monitor networks, endpoints, and user activity for anomalous events and potential cybersecurity incidents. Evidence: monitoring tool configuration and sample alert or dashboard report.",
+    sortOrder: 115,
+  },
+  {
+    category: "CSF_DETECT",
+    citation: "DE.DP-1",
+    title: "Maintain and Test Detection Processes",
+    description:
+      "Establish and regularly test event detection processes. Define and train the roles responsible for detection activities. Evidence: detection process documentation and test results.",
+    sortOrder: 116,
+  },
+  {
+    category: "CSF_DETECT",
+    citation: "DE.AE-2",
+    title: "Analyze Detected Events",
+    description:
+      "Analyze detected events to understand attack targets, techniques, and scope, and correlate with threat intelligence. Evidence: analysis templates and example event analysis reports.",
+    sortOrder: 117,
+  },
+  // CSF_RESPOND
+  {
+    category: "CSF_RESPOND",
+    citation: "RS.RP-1",
+    title: "Establish and Maintain Incident Response Plan",
+    description:
+      "Create and maintain a documented incident response plan covering roles, responsibilities, communication channels, and escalation procedures. Test it at least annually. Evidence: incident response plan and test after-action report.",
+    sortOrder: 118,
+  },
+  {
+    category: "CSF_RESPOND",
+    citation: "RS.AN-1",
+    title: "Conduct Incident Analysis",
+    description:
+      "Perform structured analysis of cybersecurity incidents to understand impact, root cause, and attacker techniques. Evidence: completed incident analysis reports.",
+    sortOrder: 119,
+  },
+  {
+    category: "CSF_RESPOND",
+    citation: "RS.CO-2",
+    title: "Communicate During and After Incidents",
+    description:
+      "Coordinate incident response activities with internal stakeholders (leadership, legal, IT) and external parties (vendors, law enforcement, regulators) as appropriate. Evidence: incident communication plan and stakeholder contact list.",
+    sortOrder: 120,
+  },
+  {
+    category: "CSF_RESPOND",
+    citation: "RS.IM-1",
+    title: "Conduct Post-Incident Reviews",
+    description:
+      "After each significant incident, review response activities, identify gaps, and update procedures to improve future response. Evidence: post-incident review reports.",
+    sortOrder: 121,
+  },
+  // CSF_RECOVER
+  {
+    category: "CSF_RECOVER",
+    citation: "RC.RP-1",
+    title: "Implement and Test Recovery Planning",
+    description:
+      "Maintain a recovery plan that prioritizes restoration of critical systems and data, and test it annually with tabletop or live exercises. Evidence: recovery plan with RTO/RPO objectives and annual test results.",
+    sortOrder: 122,
+  },
+  {
+    category: "CSF_RECOVER",
+    citation: "RC.IM-1",
+    title: "Improve Recovery Processes",
+    description:
+      "Incorporate lessons learned from incidents, exercises, and industry best practices into your recovery planning to close gaps. Evidence: improvement tracking log with updates applied after each exercise.",
+    sortOrder: 123,
+  },
+  {
+    category: "CSF_RECOVER",
+    citation: "RC.CO-1",
+    title: "Communicate Recovery Activities",
+    description:
+      "Coordinate restoration activities with internal teams and external parties, and communicate restoration status to stakeholders. Evidence: stakeholder communication plan and example recovery status update.",
+    sortOrder: 124,
+  },
+];
+
+// ── Seed runner ───────────────────────────────────────────────────────────────
+
+async function main() {
+  // 1. Upsert frameworks.
+  const frameworkMap: Record<string, string> = {};
+  for (const f of FRAMEWORKS) {
+    const fw = await prisma.framework.upsert({
+      where: { slug: f.slug },
+      update: { name: f.name, description: f.description, sortOrder: f.sortOrder },
+      create: f,
+    });
+    frameworkMap[f.slug] = fw.id;
+  }
+
+  const securityId = frameworkMap["hipaa-security"];
+  const privacyId = frameworkMap["hipaa-privacy"];
+  const nistId = frameworkMap["nist-csf"];
+
+  // 2. Upsert task templates (keyed on sortOrder for idempotency).
+  const allTasks = [
+    ...SECURITY_TASKS.map((t) => ({ ...t, frameworkId: securityId })),
+    ...PRIVACY_TASKS.map((t) => ({ ...t, frameworkId: privacyId })),
+    ...NIST_TASKS.map((t) => ({ ...t, frameworkId: nistId })),
+  ];
+
+  for (const t of allTasks) {
     const existing = await prisma.taskTemplate.findFirst({
       where: { sortOrder: t.sortOrder },
     });
-
     if (existing) {
-      await prisma.taskTemplate.update({
-        where: { id: existing.id },
-        data: t,
-      });
+      await prisma.taskTemplate.update({ where: { id: existing.id }, data: t });
     } else {
       await prisma.taskTemplate.create({ data: t });
     }
   }
 
-  console.log("Seed complete.");
+  // 3. Back-fill frameworkId on any existing Security Rule templates that
+  //    were seeded before multi-framework support (sortOrder 1–50).
+  await prisma.taskTemplate.updateMany({
+    where: { frameworkId: null, sortOrder: { lte: 50 } },
+    data: { frameworkId: securityId },
+  });
+
+  // 4. For each existing org, ensure they have an OrgFramework record for
+  //    HIPAA Security Rule (the original framework all orgs were enrolled in).
+  const orgsWithTasks = await prisma.organization.findMany({
+    where: { tasks: { some: {} } },
+    select: { id: true },
+  });
+  for (const org of orgsWithTasks) {
+    await prisma.orgFramework.upsert({
+      where: {
+        organizationId_frameworkId: {
+          organizationId: org.id,
+          frameworkId: securityId,
+        },
+      },
+      update: {},
+      create: { organizationId: org.id, frameworkId: securityId },
+    });
+  }
+
+  console.log(
+    `Seeded ${allTasks.length} task templates across ${FRAMEWORKS.length} frameworks.`
+  );
 }
 
 main()
