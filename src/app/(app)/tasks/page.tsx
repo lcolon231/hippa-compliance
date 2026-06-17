@@ -133,7 +133,7 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
                 {group.tasks.map((task) => (
                   <li
                     key={task.id}
-                    className="flex items-center gap-4 px-6 py-3 hover:bg-accent/40"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-accent/40 sm:gap-4 sm:px-6"
                   >
                     <div className="min-w-0 flex-1">
                       <Link

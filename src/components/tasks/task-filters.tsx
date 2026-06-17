@@ -55,13 +55,13 @@ export function TaskFilters({ frameworks, members }: TaskFiltersProps) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
       {frameworks.length > 1 && (
         <Select
           value={framework}
           onValueChange={(v) => setParam("framework", v)}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Framework" />
           </SelectTrigger>
           <SelectContent>
@@ -76,7 +76,7 @@ export function TaskFilters({ frameworks, members }: TaskFiltersProps) {
       )}
 
       <Select value={category} onValueChange={(v) => setParam("category", v)}>
-        <SelectTrigger className="w-[220px]">
+        <SelectTrigger className="w-full sm:w-[220px]">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>
@@ -90,7 +90,7 @@ export function TaskFilters({ frameworks, members }: TaskFiltersProps) {
       </Select>
 
       <Select value={status} onValueChange={(v) => setParam("status", v)}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-full sm:w-[160px]">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
@@ -104,7 +104,7 @@ export function TaskFilters({ frameworks, members }: TaskFiltersProps) {
       </Select>
 
       <Select value={assignee} onValueChange={(v) => setParam("assignee", v)}>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full sm:w-[180px]">
           <SelectValue placeholder="Assignee" />
         </SelectTrigger>
         <SelectContent>
