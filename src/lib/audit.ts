@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -21,7 +22,7 @@ export async function logAudit(entry: {
         action: entry.action,
         targetType: entry.targetType,
         targetId: entry.targetId ?? null,
-        metadata: entry.metadata,
+        metadata: entry.metadata as Prisma.InputJsonValue | undefined,
       },
     });
   } catch (err) {
