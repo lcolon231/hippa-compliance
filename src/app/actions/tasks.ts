@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { TaskStatus } from "@prisma/client";
+import { logAudit } from "@/lib/audit";
 
 const statusSchema = z.nativeEnum(TaskStatus);
 
@@ -25,6 +26,15 @@ export async function updateTaskStatus(taskId: string, status: string) {
       status: parsedStatus,
       completedAt: parsedStatus === "COMPLETE" ? new Date() : null,
     },
+  });
+
+  await logAudit({
+    organizationId: user.organizationId,
+    actorId: user.id,
+    action: "task.status_change",
+    targetType: "ComplianceTask",
+    targetId: task.id,
+    metadata: { status: parsedStatus },
   });
 
   revalidatePath("/tasks");
@@ -71,6 +81,16 @@ export async function updateTaskDetails(
         assigneeId: parsed.assigneeId,
       }),
     },
+  });
+
+  // Log which fields changed, not their content (notes may hold sensitive text).
+  await logAudit({
+    organizationId: user.organizationId,
+    actorId: user.id,
+    action: "task.details_change",
+    targetType: "ComplianceTask",
+    targetId: task.id,
+    metadata: { fieldsChanged: Object.keys(parsed) },
   });
 
   revalidatePath("/tasks");

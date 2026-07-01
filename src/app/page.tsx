@@ -187,6 +187,14 @@ export default function LandingPage() {
             <ShieldCheck className="h-4 w-4" />
             HIPAA Compliance Tracker
           </div>
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <Link href="/terms" className="hover:underline">
+              Terms
+            </Link>
+            <Link href="/privacy" className="hover:underline">
+              Privacy
+            </Link>
+          </div>
           <p className="text-xs text-muted-foreground">
             Not legal advice. Consult a qualified professional for compliance
             guidance specific to your practice.
