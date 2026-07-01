@@ -11,21 +11,20 @@
     --card-foreground: 222 25% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 25% 12%;
-    /* Deep, desaturated teal — reads as clinical/trustworthy without the
-       generic "AI blue-purple" saturation. */
-    --primary: 174 58% 27%;
+    /* Nodelink brand purple (sampled from their logo). */
+    --primary: 252 89% 61%;
     --primary-foreground: 0 0% 100%;
     --secondary: 40 12% 94%;
     --secondary-foreground: 222 20% 15%;
     --muted: 40 12% 95%;
     --muted-foreground: 220 10% 42%;
-    --accent: 174 32% 93%;
-    --accent-foreground: 174 58% 20%;
+    --accent: 252 60% 95%;
+    --accent-foreground: 252 60% 32%;
     --destructive: 0 72% 46%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 15% 89%;
     --input: 220 15% 89%;
-    --ring: 174 58% 27%;
+    --ring: 252 89% 61%;
     --radius: 0.5rem;
   }
 
