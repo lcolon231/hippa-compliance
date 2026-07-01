@@ -31,11 +31,13 @@ export default async function OnboardingPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
-      <div className="mb-8 flex items-center gap-2 text-lg font-semibold">
-        <ShieldCheck className="h-7 w-7 text-primary" />
+      <div className="mb-8 flex items-center gap-2.5 text-lg font-semibold tracking-tight">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+          <ShieldCheck className="h-5 w-5 text-primary" />
+        </div>
         HIPAA Tracker
       </div>
-      <Card className="w-full max-w-lg">
+      <Card className="w-full max-w-lg rounded-2xl shadow-md">
         <CardHeader>
           <CardTitle className="text-2xl">Set up your office</CardTitle>
           <CardDescription>
@@ -56,7 +58,7 @@ export default async function OnboardingPage() {
                   <label
                     key={fw.id}
                     className={cn(
-                      "flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-accent",
+                      "flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-accent/60",
                       defaultChecked && "border-primary/50 bg-primary/5"
                     )}
                   >

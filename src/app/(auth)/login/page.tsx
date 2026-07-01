@@ -95,7 +95,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-md">
       <CardHeader>
         <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>

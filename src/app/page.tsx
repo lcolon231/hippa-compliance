@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const FEATURES = [
   {
@@ -52,8 +53,13 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="container flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <ShieldCheck className="h-6 w-6 text-primary" />
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 font-semibold tracking-tight"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+            </div>
             <span>HIPAA Tracker</span>
           </Link>
           <nav className="flex items-center gap-4">
@@ -76,14 +82,14 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="container flex flex-col items-center gap-6 py-24 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border bg-muted px-4 py-1.5 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
             <Lock className="h-3.5 w-3.5" />
             Built for small medical offices
           </div>
-          <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
-            HIPAA Compliance Made Simple
+          <h1 className="text-balance max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
+            HIPAA compliance, made simple
           </h1>
-          <p className="max-w-2xl text-lg text-muted-foreground">
+          <p className="max-w-2xl text-pretty text-lg text-muted-foreground">
             Stop guessing whether your office is compliant. Track every HIPAA
             Security Rule requirement with a plain-English checklist, store
             your evidence in one place, and export an audit-ready report any
@@ -102,19 +108,30 @@ export default function LandingPage() {
         {/* Features */}
         <section id="features" className="border-t bg-muted/40 py-24">
           <div className="container">
-            <h2 className="mb-4 text-center text-3xl font-bold tracking-tight">
+            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wider text-primary/80">
+              What you get
+            </p>
+            <h2 className="mb-4 text-balance text-center text-3xl font-bold tracking-tight">
               Everything you need to stay audit-ready
             </h2>
-            <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
+            <p className="mx-auto mb-12 max-w-2xl text-pretty text-center text-muted-foreground">
               The Security Rule has dozens of requirements scattered across
               §164.308–316. We turned them into a checklist your office
               manager can actually use.
             </p>
             <div className="grid gap-6 md:grid-cols-3">
-              {FEATURES.map((feature) => (
-                <Card key={feature.title}>
+              {FEATURES.map((feature, i) => (
+                <Card
+                  key={feature.title}
+                  className={cn(
+                    "rounded-2xl border-none bg-card shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg",
+                    i === 1 && "md:mt-6"
+                  )}
+                >
                   <CardHeader>
-                    <feature.icon className="mb-2 h-10 w-10 text-primary" />
+                    <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                      <feature.icon className="h-6 w-6 text-primary" />
+                    </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -137,21 +154,25 @@ export default function LandingPage() {
             One plan, everything included. A fraction of the cost of a single
             compliance consultant visit — or a single penalty.
           </p>
-          <Card className="mx-auto max-w-md border-primary shadow-lg">
-            <CardHeader className="text-center">
+          <Card className="relative mx-auto max-w-md overflow-hidden rounded-2xl border-primary/30 shadow-lg">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-20 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+            />
+            <CardHeader className="relative text-center">
               <CardTitle className="text-lg font-medium text-muted-foreground">
                 Per office
               </CardTitle>
               <div className="flex items-baseline justify-center gap-1">
-                <span className="text-5xl font-bold">$79</span>
+                <span className="text-5xl font-bold tabular-nums">$79</span>
                 <span className="text-muted-foreground">/month</span>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="relative space-y-4">
               <ul className="space-y-3">
                 {PRICING_FEATURES.map((feature) => (
                   <li key={feature} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                     {feature}
                   </li>
                 ))}
@@ -165,11 +186,14 @@ export default function LandingPage() {
 
         {/* Trust */}
         <section className="border-t bg-muted/40 py-16">
-          <div className="container text-center">
-            <h3 className="mb-3 text-xl font-semibold">
+          <div className="container flex flex-col items-center text-center">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="mb-3 text-xl font-semibold tracking-tight">
               We practice what we preach
             </h3>
-            <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
+            <p className="mx-auto max-w-2xl text-pretty text-sm text-muted-foreground">
               Your compliance data is encrypted in transit (TLS 1.2+) and at
               rest on infrastructure from Vercel and Neon. Evidence files live
               in a private storage bucket and are only ever served through

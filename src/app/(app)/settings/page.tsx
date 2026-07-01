@@ -39,13 +39,16 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary/80">
+          Configuration
+        </p>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
+        <p className="mt-1 text-muted-foreground">
           Manage your organization, frameworks, and team
         </p>
       </div>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-lg">Organization</CardTitle>
           <CardDescription>
@@ -60,7 +63,7 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-lg">Compliance Frameworks</CardTitle>
           <CardDescription>
@@ -78,7 +81,7 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-lg">Team</CardTitle>
           <CardDescription>
@@ -96,7 +99,7 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-lg">Billing</CardTitle>
           <CardDescription>

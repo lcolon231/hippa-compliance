@@ -84,7 +84,7 @@ export default function SignupPage() {
   }
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-md">
       <CardHeader>
         <CardTitle className="text-2xl">Create your account</CardTitle>
         <CardDescription>

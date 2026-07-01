@@ -24,8 +24,10 @@ export default async function AppLayout({
         <header className="flex h-14 items-center gap-2 border-b bg-card px-4 md:hidden">
           <MobileNav user={navUser} orgName={user.organization.name} />
           <div className="flex min-w-0 items-center gap-2">
-            <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
-            <span className="truncate text-sm font-semibold">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+            </div>
+            <span className="truncate text-sm font-semibold tracking-tight">
               HIPAA Tracker
             </span>
           </div>

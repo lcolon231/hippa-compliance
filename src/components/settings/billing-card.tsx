@@ -57,9 +57,11 @@ export function BillingCard({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-lg border p-4">
+      <div className="flex items-center justify-between rounded-xl border p-4">
         <div className="flex items-center gap-3">
-          <CreditCard className="h-5 w-5 text-muted-foreground" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <CreditCard className="h-4 w-4 text-primary" />
+          </div>
           <div>
             <p className="text-sm font-medium">
               Office plan — $79/month

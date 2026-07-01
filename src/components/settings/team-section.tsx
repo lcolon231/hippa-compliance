@@ -106,7 +106,7 @@ export function TeamSection({
         </form>
       )}
 
-      <ul className="divide-y rounded-lg border">
+      <ul className="divide-y rounded-xl border">
         {members.map((member) => {
           const initials = (member.name || member.email)
             .split(" ")
@@ -116,7 +116,10 @@ export function TeamSection({
             .toUpperCase();
 
           return (
-            <li key={member.id} className="flex items-center gap-3 p-3">
+            <li
+              key={member.id}
+              className="flex items-center gap-3 p-3 transition-colors hover:bg-accent/40"
+            >
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="text-xs">{initials}</AvatarFallback>
               </Avatar>
