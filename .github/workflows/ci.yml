@@ -35,6 +35,9 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
+      - name: Unit tests
+        run: npm run test
+
       # Run `next build` directly (not `npm run build`) so CI does not need a
       # live database for `prisma migrate deploy`.
       - name: Build

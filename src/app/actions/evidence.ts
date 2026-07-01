@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAudit } from "@/lib/audit";
 
 const EVIDENCE_BUCKET = "evidence";
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -86,7 +87,7 @@ export async function recordEvidence(input: {
     throw new Error("Invalid storage path");
   }
 
-  await prisma.evidence.create({
+  const created = await prisma.evidence.create({
     data: {
       taskId: task.id,
       uploadedById: user.id,
@@ -95,6 +96,15 @@ export async function recordEvidence(input: {
       mimeType: parsed.mimeType,
       sizeBytes: parsed.sizeBytes,
     },
+  });
+
+  await logAudit({
+    organizationId: user.organizationId,
+    actorId: user.id,
+    action: "evidence.upload",
+    targetType: "Evidence",
+    targetId: created.id,
+    metadata: { taskId: task.id, fileName: parsed.fileName },
   });
 
   revalidatePath(`/tasks/${parsed.taskId}`);
@@ -132,7 +142,7 @@ export async function deleteEvidence(evidenceId: string) {
       id: evidenceId,
       task: { organizationId: admin.organizationId },
     },
-    select: { id: true, taskId: true, storagePath: true },
+    select: { id: true, taskId: true, storagePath: true, fileName: true },
   });
   if (!evidence) throw new Error("Evidence not found");
 
@@ -140,6 +150,15 @@ export async function deleteEvidence(evidenceId: string) {
   await supabase.storage.from(EVIDENCE_BUCKET).remove([evidence.storagePath]);
 
   await prisma.evidence.delete({ where: { id: evidence.id } });
+
+  await logAudit({
+    organizationId: admin.organizationId,
+    actorId: admin.id,
+    action: "evidence.delete",
+    targetType: "Evidence",
+    targetId: evidence.id,
+    metadata: { taskId: evidence.taskId, fileName: evidence.fileName },
+  });
 
   revalidatePath(`/tasks/${evidence.taskId}`);
 }

@@ -26,6 +26,7 @@ model Organization {
   tasks         ComplianceTask[]
   reports       Report[]
   orgFrameworks OrgFramework[]
+  auditLogs     AuditLog[]
 }
 
 enum SubscriptionStatus {
@@ -47,6 +48,7 @@ model User {
 
   assignedTasks ComplianceTask[] @relation("TaskAssignee")
   evidence      Evidence[]
+  auditLogs     AuditLog[]
 
   @@index([organizationId])
 }
@@ -177,4 +179,21 @@ model Report {
   createdAt      DateTime     @default(now())
 
   @@index([organizationId])
+}
+
+// Immutable trail of sensitive actions (evidence, team, billing, task
+// changes) for compliance and incident-response purposes.
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorId        String?
+  actor          User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action         String // e.g. "evidence.delete", "team.invite", "task.status_change"
+  targetType     String // e.g. "Evidence", "User", "ComplianceTask"
+  targetId       String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
 }
