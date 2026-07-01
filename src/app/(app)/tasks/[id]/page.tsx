@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, RefreshCw } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
+import { recurrenceLabel } from "@/lib/recurrence";
 import { StatusSelect } from "@/components/tasks/status-select";
 import { TaskDetailsForm } from "@/components/tasks/task-details-form";
 import { EvidenceSection } from "@/components/evidence/evidence-section";
@@ -64,13 +65,26 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             <Badge variant="outline" className="font-mono text-xs">
               45 CFR § {task.template.citation}
             </Badge>
+            {task.recurrenceMonths && (
+              <Badge
+                variant="secondary"
+                className="gap-1 bg-primary/10 text-primary"
+              >
+                <RefreshCw className="h-3 w-3" />
+                {recurrenceLabel(task.recurrenceMonths)}
+              </Badge>
+            )}
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
             {task.template.title}
           </h1>
           {task.completedAt && (
             <p className="text-sm text-muted-foreground">
-              Completed {formatDate(task.completedAt)}
+              {task.recurrenceMonths ? "Last completed" : "Completed"}{" "}
+              {formatDate(task.completedAt)}
+              {task.recurrenceMonths && task.dueDate && (
+                <> · next due {formatDate(task.dueDate)}</>
+              )}
             </p>
           )}
         </div>
@@ -104,6 +118,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             notes={task.notes}
             dueDate={task.dueDate}
             assigneeId={task.assigneeId}
+            recurrenceMonths={task.recurrenceMonths}
             members={members}
           />
         </CardContent>

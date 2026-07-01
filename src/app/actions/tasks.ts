@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { TaskStatus } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
+import { nextDueDate } from "@/lib/recurrence";
 
 const statusSchema = z.nativeEnum(TaskStatus);
 
@@ -16,15 +17,26 @@ export async function updateTaskStatus(taskId: string, status: string) {
   // Scope by organizationId — never trust the client for org membership.
   const task = await prisma.complianceTask.findFirst({
     where: { id: taskId, organizationId: user.organizationId },
-    select: { id: true },
+    select: { id: true, recurrenceMonths: true },
   });
   if (!task) throw new Error("Task not found");
+
+  const now = new Date();
+  const completing = parsedStatus === "COMPLETE";
+  // For a recurring task, completing it schedules the next cycle: the task
+  // stays COMPLETE (and green) until its rolled-forward due date arrives, at
+  // which point the reminder cron reopens it. See src/app/api/cron/reminders.
+  const rolledDueDate = completing
+    ? nextDueDate(now, task.recurrenceMonths)
+    : undefined;
 
   await prisma.complianceTask.update({
     where: { id: task.id },
     data: {
       status: parsedStatus,
-      completedAt: parsedStatus === "COMPLETE" ? new Date() : null,
+      completedAt: completing ? now : null,
+      ...(completing && { lastCompletedAt: now }),
+      ...(rolledDueDate && { dueDate: rolledDueDate }),
     },
   });
 
@@ -34,12 +46,54 @@ export async function updateTaskStatus(taskId: string, status: string) {
     action: "task.status_change",
     targetType: "ComplianceTask",
     targetId: task.id,
-    metadata: { status: parsedStatus },
+    metadata: {
+      status: parsedStatus,
+      ...(rolledDueDate && { nextDueDate: rolledDueDate.toISOString() }),
+    },
   });
 
   revalidatePath("/tasks");
   revalidatePath(`/tasks/${taskId}`);
   revalidatePath("/dashboard");
+}
+
+const recurrenceSchema = z.object({
+  recurrenceMonths: z.number().int().min(0).max(120),
+});
+
+export async function setTaskRecurrence(
+  taskId: string,
+  recurrenceMonths: number
+) {
+  const user = await requireUser();
+  const parsed = recurrenceSchema.parse({ recurrenceMonths });
+
+  const task = await prisma.complianceTask.findFirst({
+    where: { id: taskId, organizationId: user.organizationId },
+    select: { id: true },
+  });
+  if (!task) throw new Error("Task not found");
+
+  await prisma.complianceTask.update({
+    where: { id: task.id },
+    // 0 means "one-time" — store as null.
+    data: {
+      recurrenceMonths:
+        parsed.recurrenceMonths > 0 ? parsed.recurrenceMonths : null,
+    },
+  });
+
+  await logAudit({
+    organizationId: user.organizationId,
+    actorId: user.id,
+    action: "task.recurrence_change",
+    targetType: "ComplianceTask",
+    targetId: task.id,
+    metadata: { recurrenceMonths: parsed.recurrenceMonths },
+  });
+
+  revalidatePath("/tasks");
+  revalidatePath(`/tasks/${taskId}`);
 }
 
 const detailsSchema = z.object({

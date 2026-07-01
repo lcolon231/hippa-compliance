@@ -22,11 +22,13 @@ model Organization {
   subscriptionStatus   SubscriptionStatus @default(TRIALING)
   currentPeriodEnd     DateTime?
 
-  users         User[]
-  tasks         ComplianceTask[]
-  reports       Report[]
-  orgFrameworks OrgFramework[]
-  auditLogs     AuditLog[]
+  users           User[]
+  tasks           ComplianceTask[]
+  reports         Report[]
+  orgFrameworks   OrgFramework[]
+  auditLogs       AuditLog[]
+  incidents       Incident[]
+  trainingRecords TrainingRecord[]
 }
 
 enum SubscriptionStatus {
@@ -46,9 +48,10 @@ model User {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime     @default(now())
 
-  assignedTasks ComplianceTask[] @relation("TaskAssignee")
-  evidence      Evidence[]
-  auditLogs     AuditLog[]
+  assignedTasks   ComplianceTask[] @relation("TaskAssignee")
+  evidence        Evidence[]
+  auditLogs       AuditLog[]
+  reportedIncidents Incident[]     @relation("IncidentReporter")
 
   @@index([organizationId])
 }
@@ -137,6 +140,12 @@ model ComplianceTask {
   reminderSentAt DateTime?
   updatedAt      DateTime   @updatedAt
 
+  // Recurring obligations (e.g. annual risk assessment). null = one-time.
+  // On completion the dueDate is rolled forward by this many months; the
+  // reminder cron reopens the task when that next cycle comes due.
+  recurrenceMonths Int?
+  lastCompletedAt  DateTime?
+
   evidence Evidence[]
 
   @@unique([organizationId, templateId])
@@ -196,4 +205,73 @@ model AuditLog {
   createdAt      DateTime     @default(now())
 
   @@index([organizationId, createdAt])
+}
+
+// Security-incident and breach log (HIPAA Breach Notification Rule,
+// 45 CFR §164.400–414 recordkeeping).
+model Incident {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportedById   String?
+  reportedBy     User?        @relation("IncidentReporter", fields: [reportedById], references: [id], onDelete: SetNull)
+
+  title       String
+  description String             @db.Text
+  severity    IncidentSeverity   @default(MEDIUM)
+  status      IncidentStatus     @default(OPEN)
+
+  occurredAt   DateTime?
+  discoveredAt DateTime  @default(now())
+
+  // Breach analysis
+  phiInvolved        Boolean             @default(false)
+  individualsAffected Int?
+  determination      BreachDetermination @default(UNDETERMINED)
+  notifiedAt         DateTime?
+
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
+
+enum BreachDetermination {
+  UNDETERMINED
+  NOT_A_BREACH
+  BREACH
+}
+
+// Workforce HIPAA-training records (§164.308(a)(5) security awareness
+// training). Covers all staff, including those without an app login, so the
+// trainee is stored as a plain name with an optional link to a User.
+model TrainingRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  personName  String
+  courseName  String
+  completedAt DateTime
+  expiresAt   DateTime?
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+
+  @@index([organizationId, expiresAt])
 }

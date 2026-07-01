@@ -24,6 +24,23 @@ export async function GET(request: Request) {
     now.getTime() - REMINDER_COOLDOWN_DAYS * 86_400_000
   );
 
+  // Reopen recurring tasks whose next cycle has come due: a COMPLETE task with
+  // a recurrence and a due date now in the past starts a fresh cycle. It
+  // re-enters the active pool (NOT_STARTED) and flows into the reminder digest
+  // below like any other due task.
+  const reopened = await prisma.complianceTask.updateMany({
+    where: {
+      status: "COMPLETE",
+      recurrenceMonths: { not: null },
+      dueDate: { lte: now },
+    },
+    data: {
+      status: "NOT_STARTED",
+      completedAt: null,
+      reminderSentAt: null,
+    },
+  });
+
   const tasks = await prisma.complianceTask.findMany({
     where: {
       status: { in: ["NOT_STARTED", "IN_PROGRESS"] },
@@ -104,5 +121,6 @@ export async function GET(request: Request) {
     sent,
     failed,
     tasksMatched: tasks.length,
+    recurringReopened: reopened.count,
   });
 }
