@@ -52,7 +52,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     <div className="space-y-6">
       <Link
         href="/tasks"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> Back to tasks
       </Link>
@@ -77,7 +77,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         <StatusSelect taskId={task.id} status={task.status} />
       </div>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <BookOpen className="h-4 w-4 text-primary" />
@@ -85,13 +85,13 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
             {task.template.description}
           </p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Details</CardTitle>
           <CardDescription>
@@ -109,7 +109,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Evidence</CardTitle>
           <CardDescription>

@@ -27,15 +27,18 @@ export default async function ReportsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary/80">
+            Audit trail
+          </p>
           <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
-          <p className="text-muted-foreground">
+          <p className="mt-1 text-muted-foreground">
             Audit-ready PDF snapshots of your compliance status
           </p>
         </div>
         <GenerateReportButton />
       </div>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-lg">Past Reports</CardTitle>
           <CardDescription>
@@ -44,8 +47,8 @@ export default async function ReportsPage() {
         </CardHeader>
         <CardContent>
           {reports.length === 0 ? (
-            <div className="rounded-lg border border-dashed py-12 text-center">
-              <FileText className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+            <div className="flex flex-col items-center rounded-xl border border-dashed py-12 text-center">
+              <FileText className="mb-3 h-8 w-8 text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">
                 No reports yet. Generate your first compliance status report
                 above.
@@ -56,10 +59,12 @@ export default async function ReportsPage() {
               {reports.map((report) => (
                 <li
                   key={report.id}
-                  className="flex items-center justify-between gap-4 py-3"
+                  className="flex items-center justify-between gap-4 rounded-lg px-2 py-3 transition-colors hover:bg-accent/40"
                 >
                   <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
                     <div>
                       <p className="text-sm font-medium">
                         Compliance Status Report
@@ -74,10 +79,10 @@ export default async function ReportsPage() {
                       variant="secondary"
                       className={
                         report.scoreAtExport >= 80
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-emerald-600/10 text-emerald-700"
                           : report.scoreAtExport >= 50
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-amber-500/10 text-amber-700"
+                            : "bg-red-600/10 text-red-700"
                       }
                     >
                       {report.scoreAtExport}%

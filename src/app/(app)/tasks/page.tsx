@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Paperclip } from "lucide-react";
+import { Paperclip, ClipboardList } from "lucide-react";
 import { Prisma, TaskStatus, Category } from "@prisma/client";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -100,8 +100,11 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary/80">
+            Checklist
+          </p>
           <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground">
+          <p className="mt-1 text-muted-foreground">
             {tasks.length} task{tasks.length === 1 ? "" : "s"} across{" "}
             {frameworks.length} framework{frameworks.length === 1 ? "" : "s"}
           </p>
@@ -112,14 +115,18 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
       </div>
 
       {grouped.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            No tasks match these filters.
+        <Card className="rounded-2xl">
+          <CardContent className="flex flex-col items-center gap-1 py-14 text-center">
+            <ClipboardList className="mb-2 h-8 w-8 text-muted-foreground/50" />
+            <p className="text-sm font-medium">No matching tasks</p>
+            <p className="text-sm text-muted-foreground">
+              Try adjusting or clearing the filters above.
+            </p>
           </CardContent>
         </Card>
       ) : (
         grouped.map((group) => (
-          <Card key={group.category}>
+          <Card key={group.category} className="rounded-2xl">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 {CATEGORY_LABELS[group.category]}
@@ -133,7 +140,7 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
                 {group.tasks.map((task) => (
                   <li
                     key={task.id}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-accent/40 sm:gap-4 sm:px-6"
+                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/40 sm:gap-4 sm:px-6"
                   >
                     <div className="min-w-0 flex-1">
                       <Link

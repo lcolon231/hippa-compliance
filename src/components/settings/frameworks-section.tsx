@@ -57,14 +57,17 @@ export function FrameworksSection({
   }
 
   return (
-    <ul className="divide-y rounded-lg border">
+    <ul className="divide-y rounded-xl border">
       {allFrameworks.map((fw) => {
         const enabled = enabledIds.includes(fw.id);
         return (
-          <li key={fw.id} className="flex items-start gap-4 p-4">
+          <li
+            key={fw.id}
+            className="flex items-start gap-4 p-4 transition-colors hover:bg-accent/40"
+          >
             <div className="mt-0.5">
               {enabled ? (
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
               ) : (
                 <Circle className="h-5 w-5 text-muted-foreground" />
               )}
@@ -75,7 +78,7 @@ export function FrameworksSection({
                 {enabled && (
                   <Badge
                     variant="secondary"
-                    className="bg-green-100 text-green-800"
+                    className="bg-emerald-600/10 text-emerald-700"
                   >
                     Active
                   </Badge>

@@ -164,15 +164,21 @@ export function EvidenceSection({
       </div>
 
       {evidence.length === 0 ? (
-        <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+        <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+          <FileText className="mb-1 h-6 w-6 text-muted-foreground/50" />
           No evidence attached yet. Upload your policy, signed BAA, training
           record, or screenshot.
         </div>
       ) : (
-        <ul className="divide-y rounded-lg border">
+        <ul className="divide-y rounded-xl border">
           {evidence.map((item) => (
-            <li key={item.id} className="flex items-center gap-3 p-3">
-              <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <li
+              key={item.id}
+              className="flex items-center gap-3 p-3 transition-colors hover:bg-accent/40"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{item.fileName}</p>
                 <p className="text-xs text-muted-foreground">

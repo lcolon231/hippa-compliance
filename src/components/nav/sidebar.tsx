@@ -71,15 +71,19 @@ function NavContent({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center gap-2 border-b px-6">
-        <ShieldCheck className="h-6 w-6 shrink-0 text-primary" />
+      <div className="flex h-16 items-center gap-2.5 border-b px-6">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+          <ShieldCheck className="h-[18px] w-[18px] text-primary" />
+        </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">HIPAA Tracker</p>
+          <p className="truncate text-sm font-semibold tracking-tight">
+            HIPAA Tracker
+          </p>
           <p className="truncate text-xs text-muted-foreground">{orgName}</p>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-0.5 p-3">
         {NAV_ITEMS.map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -89,12 +93,15 @@ function NavContent({
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
               )}
             >
+              {active && (
+                <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
+              )}
               <item.icon className="h-4 w-4 shrink-0" />
               {item.label}
             </Link>
