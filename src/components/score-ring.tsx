@@ -19,10 +19,10 @@ export function ScoreRing({
 
   const color =
     score >= 80
-      ? "stroke-green-500"
+      ? "stroke-emerald-600"
       : score >= 50
-        ? "stroke-yellow-500"
-        : "stroke-red-500";
+        ? "stroke-amber-500"
+        : "stroke-red-600";
 
   return (
     <div
