@@ -9,6 +9,8 @@ import {
   FileText,
   Settings,
   ShieldCheck,
+  ShieldAlert,
+  GraduationCap,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -26,6 +28,8 @@ import {
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/tasks", label: "Tasks", icon: ClipboardCheck },
+  { href: "/incidents", label: "Incidents", icon: ShieldAlert },
+  { href: "/training", label: "Training", icon: GraduationCap },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

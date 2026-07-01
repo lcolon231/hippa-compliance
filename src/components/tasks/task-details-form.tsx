@@ -13,8 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { updateTaskDetails } from "@/app/actions/tasks";
-import { Loader2 } from "lucide-react";
+import { updateTaskDetails, setTaskRecurrence } from "@/app/actions/tasks";
+import { RECURRENCE_OPTIONS } from "@/lib/recurrence";
+import { Loader2, RefreshCw } from "lucide-react";
 
 const UNASSIGNED = "UNASSIGNED";
 
@@ -23,6 +24,7 @@ interface TaskDetailsFormProps {
   notes: string | null;
   dueDate: Date | null;
   assigneeId: string | null;
+  recurrenceMonths: number | null;
   members: { id: string; name: string | null; email: string }[];
 }
 
@@ -31,16 +33,19 @@ export function TaskDetailsForm({
   notes: initialNotes,
   dueDate: initialDueDate,
   assigneeId: initialAssigneeId,
+  recurrenceMonths: initialRecurrence,
   members,
 }: TaskDetailsFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [recurrencePending, startRecurrenceTransition] = useTransition();
 
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [dueDate, setDueDate] = useState(
     initialDueDate ? initialDueDate.toISOString().slice(0, 10) : ""
   );
   const [assigneeId, setAssigneeId] = useState(initialAssigneeId ?? UNASSIGNED);
+  const [recurrence, setRecurrence] = useState(String(initialRecurrence ?? 0));
 
   function handleSave() {
     startTransition(async () => {
@@ -56,6 +61,28 @@ export function TaskDetailsForm({
           variant: "destructive",
           title: "Save failed",
           description: "Could not save task details. Please try again.",
+        });
+      }
+    });
+  }
+
+  function handleRecurrenceChange(value: string) {
+    setRecurrence(value);
+    startRecurrenceTransition(async () => {
+      try {
+        await setTaskRecurrence(taskId, Number(value));
+        toast({
+          title: "Recurrence updated",
+          description:
+            Number(value) > 0
+              ? "This task will reopen automatically each cycle."
+              : "This task is now one-time.",
+        });
+      } catch {
+        toast({
+          variant: "destructive",
+          title: "Update failed",
+          description: "Could not update the recurrence.",
         });
       }
     });
@@ -89,6 +116,29 @@ export function TaskDetailsForm({
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="flex items-center gap-1.5">
+          <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+          Recurrence
+        </Label>
+        <Select value={recurrence} onValueChange={handleRecurrenceChange}>
+          <SelectTrigger disabled={recurrencePending}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {RECURRENCE_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={String(o.value)}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Recurring tasks (annual risk assessment, quarterly access reviews)
+          reopen automatically when the next cycle comes due.
+        </p>
       </div>
 
       <div className="space-y-2">

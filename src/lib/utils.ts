@@ -111,3 +111,54 @@ export const STATUS_LABELS: Record<string, string> = {
   COMPLETE: "Complete",
   NOT_APPLICABLE: "N/A",
 };
+
+// ── Incident metadata ───────────────────────────────────────────────────────
+
+export const INCIDENT_SEVERITY_LABELS: Record<string, string> = {
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High",
+  CRITICAL: "Critical",
+};
+
+export const INCIDENT_SEVERITY_STYLES: Record<string, string> = {
+  LOW: "bg-slate-100 text-slate-700",
+  MEDIUM: "bg-amber-500/10 text-amber-700",
+  HIGH: "bg-orange-500/10 text-orange-700",
+  CRITICAL: "bg-red-600/10 text-red-700",
+};
+
+export const INCIDENT_STATUS_LABELS: Record<string, string> = {
+  OPEN: "Open",
+  INVESTIGATING: "Investigating",
+  RESOLVED: "Resolved",
+  CLOSED: "Closed",
+};
+
+export const INCIDENT_STATUS_STYLES: Record<string, string> = {
+  OPEN: "bg-red-600/10 text-red-700",
+  INVESTIGATING: "bg-amber-500/10 text-amber-700",
+  RESOLVED: "bg-emerald-600/10 text-emerald-700",
+  CLOSED: "bg-slate-100 text-slate-600",
+};
+
+export const BREACH_DETERMINATION_LABELS: Record<string, string> = {
+  UNDETERMINED: "Undetermined",
+  NOT_A_BREACH: "Not a breach",
+  BREACH: "Breach",
+};
+
+// ── Training metadata ───────────────────────────────────────────────────────
+
+/** "expired" | "expiring" (within 30 days) | "valid" | "none" (no expiry). */
+export function trainingExpiryStatus(
+  expiresAt: Date | string | null | undefined,
+  now: Date = new Date()
+): "expired" | "expiring" | "valid" | "none" {
+  if (!expiresAt) return "none";
+  const exp = new Date(expiresAt);
+  if (exp < now) return "expired";
+  const THIRTY_DAYS = 30 * 86_400_000;
+  if (exp.getTime() - now.getTime() <= THIRTY_DAYS) return "expiring";
+  return "valid";
+}
